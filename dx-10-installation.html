@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Installation and Polish — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Developer Toolkit</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Installation and Polish</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>10</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Developer Toolkit</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Your <code>dx</code> toolkit has seven working commands. In this final lesson you&rsquo;ll add a version command, create an install script to make <code>dx</code> available system-wide, and review the complete set of tmux integration patterns you&rsquo;ve learned across the track.</p>
+
+    <!-- CONCEPT -->
+    <h2>From Project Directory to System Command</h2>
+
+    <p>Right now you run <code>dx</code> by calling <code>./dx</code> or <code>~/projects/dx/dx</code> directly. To use it from any directory, you need it in your <code>PATH</code>. The install script creates a thin wrapper in <code>~/.local/bin</code> that forwards all arguments to the real <code>dx</code> script&mdash;so you can update the source in place and the installed command always uses the latest version.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Add Version Info and Install</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Add a version command</span>
+      <div class="step-content">
+        <p>This simple subcommand prints the version and lists all available commands by reading the <code>commands/</code> directory:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/commands/version</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+echo "dx version 1.0.0"
+echo "AI backends: claude, codex"
+echo ""
+echo "Commands available:"
+ls -1 "$(dirname "$0")" | grep -v "^_"</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x commands/version</div>
+        </div>
+        <p>The <code>ls -1</code> lists all files in the <code>commands/</code> directory, and <code>grep -v "^_"</code> filters out any helper files prefixed with an underscore (a convention for non-command files if you add them later).</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Create an install script</span>
+      <div class="step-content">
+        <p>The installer creates a wrapper script in <code>~/.local/bin</code> that calls the real <code>dx</code> from its source directory. This way updates to the source are immediately available everywhere:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/install.sh</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+set -e
+
+INSTALL_DIR="${1:-$HOME/.local/bin}"
+SOURCE_DIR="$(cd "$(dirname "$0")" &amp;&amp; pwd)"
+
+mkdir -p "$INSTALL_DIR"
+
+# Create wrapper that calls the real dx
+cat &gt; "$INSTALL_DIR/dx" &lt;&lt; WRAPPER
+#!/bin/bash
+exec "$SOURCE_DIR/dx" "\$@"
+WRAPPER
+chmod +x "$INSTALL_DIR/dx"
+
+echo "Installed dx to $INSTALL_DIR/dx"
+echo ""
+echo "Make sure $INSTALL_DIR is in your PATH:"
+echo "  export PATH=\"$INSTALL_DIR:\$PATH\""
+echo ""
+echo "Then run: dx help"</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x install.sh</div>
+        </div>
+        <p>Key details:</p>
+        <ul>
+          <li><strong>Custom install path</strong> &mdash; Pass a directory as the first argument to install elsewhere (e.g., <code>./install.sh /usr/local/bin</code>). Defaults to <code>~/.local/bin</code>.</li>
+          <li><strong><code>exec</code></strong> &mdash; The wrapper uses <code>exec</code> to replace itself with the real <code>dx</code> process, so there&rsquo;s no extra shell sitting in the process tree.</li>
+          <li><strong>Escaped <code>\$@</code></strong> &mdash; The <code>WRAPPER</code> heredoc uses a backslash to preserve the literal <code>$@</code> in the generated file, ensuring all arguments are forwarded correctly.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Install dx</span>
+      <div class="step-content">
+        <p>Run the installer, add the directory to your <code>PATH</code>, and verify:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/dx
+./install.sh
+export PATH="$HOME/.local/bin:$PATH"
+dx help</div>
+        </div>
+        <p>You should see the full help output. Now <code>dx</code> works from any directory.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Make it permanent</span>
+      <div class="step-content">
+        <p>Add the <code>PATH</code> export to your shell profile so it persists across terminal sessions:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># For zsh (default on macOS)</span>
+echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.zshrc
+
+<span class="comment"># For bash</span>
+echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.bashrc</div>
+        </div>
+        <p>Open a new terminal and confirm <code>dx help</code> works without any manual <code>export</code>.</p>
+      </div>
+    </div>
+
+    <!-- COMPLETE COMMAND LIST -->
+    <h2>The Complete dx Toolkit</h2>
+
+    <p>Here&rsquo;s every command you&rsquo;ve built across this track:</p>
+
+    <div class="copy-wrapper">
+      <button class="copy-btn">Copy</button>
+      <div class="terminal-block">dx help                    <span class="comment"># Show all commands</span>
+dx version                 <span class="comment"># Show version info</span>
+dx review                  <span class="comment"># Review staged changes</span>
+dx pr                      <span class="comment"># Create PR with AI description</span>
+dx explain &lt;file&gt;          <span class="comment"># Interactive code explanation</span>
+dx test                    <span class="comment"># Run tests, analyze failures</span>
+dx standup                 <span class="comment"># Summarize git activity</span>
+dx ask "question"          <span class="comment"># Quick popup Q&amp;A</span>
+dx watch "*.py"            <span class="comment"># Watch files for changes</span></div>
+    </div>
+
+    <p>All commands accept <code>--ai=claude</code> or <code>--ai=codex</code> to switch AI backends.</p>
+
+    <!-- QUICK REFERENCE: COMMANDS -->
+    <h2>Quick Reference: dx Commands</h2>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Mode</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>dx review</code></td>
+          <td>Non-interactive</td>
+          <td>Review staged changes</td>
+        </tr>
+        <tr>
+          <td><code>dx pr</code></td>
+          <td>Non-interactive</td>
+          <td>Generate PR description</td>
+        </tr>
+        <tr>
+          <td><code>dx explain &lt;file&gt;</code></td>
+          <td>Interactive session</td>
+          <td>Explain code</td>
+        </tr>
+        <tr>
+          <td><code>dx test</code></td>
+          <td>Split pane</td>
+          <td>Analyze test failures</td>
+        </tr>
+        <tr>
+          <td><code>dx standup</code></td>
+          <td>Non-interactive</td>
+          <td>Summarize git activity</td>
+        </tr>
+        <tr>
+          <td><code>dx ask "q"</code></td>
+          <td>Popup</td>
+          <td>Quick question</td>
+        </tr>
+        <tr>
+          <td><code>dx watch "*.js"</code></td>
+          <td>Background</td>
+          <td>Watch and analyze</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- QUICK REFERENCE: TMUX PATTERNS -->
+    <h2>Quick Reference: tmux Integration Patterns</h2>
+
+    <p>These are the five tmux patterns you used to build <code>dx</code>. Each maps to a different kind of AI interaction:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ai_prompt "$prompt"</code></td>
+          <td>One-shot, non-interactive</td>
+        </tr>
+        <tr>
+          <td><code>ai_interactive "$prompt"</code></td>
+          <td>Persistent session with context</td>
+        </tr>
+        <tr>
+          <td><code>tmux split-window -h "$AI_CLI"</code></td>
+          <td>Side-by-side analysis</td>
+        </tr>
+        <tr>
+          <td><code>tmux display-popup -E "$AI_CLI -p '$prompt'"</code></td>
+          <td>Floating popup</td>
+        </tr>
+        <tr>
+          <td><code>tmux new-session -d -s name "command"</code></td>
+          <td>Background watcher</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- KEY FILES -->
+    <h2>Final Project Structure</h2>
+
+    <div class="file-tree"><code>~/projects/dx/
+├── dx              # Main entry point
+├── lib.sh          # Shared functions
+├── install.sh      # Installer
+└── commands/
+    ├── review      # Review staged changes
+    ├── pr          # Create PRs
+    ├── explain     # Interactive explanation
+    ├── test        # Test analysis
+    ├── standup     # Git summary
+    ├── ask         # Quick popup Q&amp;A
+    ├── watch       # File watcher
+    └── version     # Version info</code></div>
+
+    <!-- EXTENDING DX -->
+    <h2>Extending dx</h2>
+
+    <p>Every new command follows the same pattern: parse arguments, construct a prompt, choose an interaction mode, and integrate with tmux. Here are some ideas for commands you could add next:</p>
+
+    <ul>
+      <li><strong><code>dx commit</code></strong> &mdash; AI-generated commit messages</li>
+      <li><strong><code>dx refactor &lt;file&gt;</code></strong> &mdash; Suggest refactoring improvements</li>
+      <li><strong><code>dx deps</code></strong> &mdash; Analyze dependencies for updates and security issues</li>
+      <li><strong><code>dx doc &lt;file&gt;</code></strong> &mdash; Generate documentation</li>
+      <li><strong><code>dx debug</code></strong> &mdash; Analyze error logs</li>
+      <li><strong><code>dx pair</code></strong> &mdash; Open side-by-side Claude + Codex sessions</li>
+    </ul>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>dx</code> is installed and available in your <code>PATH</code> from any directory</li>
+      <li>All commands work with <code>--ai=claude</code> or <code>--ai=codex</code></li>
+      <li>You have a complete developer toolkit with seven AI-powered commands</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>Track Complete!</strong> You&rsquo;ve built a full AI-powered developer toolkit using tmux scripting. You&rsquo;ve mastered five tmux integration patterns&mdash;non-interactive prompts, interactive sessions, split panes, popups, and background watchers. Explore the <a href="index.html">other tracks</a> to learn more tmux techniques, or start extending <code>dx</code> with your own commands.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="dx-09-background-watchers.html" class="prev">Background Watchers</a>
+      <span></span>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html" class="current">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
