@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tmux Popup Mode — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Developer Toolkit</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Tmux Popup Mode</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>8</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Developer Toolkit</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">tmux 3.2+ introduced popup windows&mdash;floating overlays that appear on top of your current layout and disappear when done. In this lesson you&rsquo;ll add a popup helper to <code>lib.sh</code> and build <code>dx ask</code>, a command for quick AI questions that doesn&rsquo;t disrupt your pane arrangement.</p>
+
+    <!-- CONCEPT -->
+    <h2>Floating Popups vs. Splits and Sessions</h2>
+
+    <p>So far you&rsquo;ve used three tmux interaction patterns in <code>dx</code>:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Used By</th>
+          <th>Behaviour</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Non-interactive</td>
+          <td><code>review</code>, <code>pr</code>, <code>standup</code></td>
+          <td>Run AI, print output, exit</td>
+        </tr>
+        <tr>
+          <td>Dedicated session</td>
+          <td><code>explain</code></td>
+          <td>New tmux session with persistent conversation</td>
+        </tr>
+        <tr>
+          <td>Split pane</td>
+          <td><code>test</code></td>
+          <td>AI opens beside your current work</td>
+        </tr>
+        <tr>
+          <td><strong>Popup</strong></td>
+          <td><strong><code>ask</code></strong></td>
+          <td><strong>Floating overlay; closes when done</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Popups are ideal for quick, disposable interactions. The <code>display-popup</code> command creates a floating window at a specified size, runs a command inside it, and automatically closes when that command exits. Your underlying pane layout stays untouched.</p>
+
+    <div class="callout warning">
+      <p><strong>Version requirement:</strong> Popups need tmux 3.2 or higher. Run <code>tmux -V</code> to check. If you&rsquo;re on an older version, the helper function you&rsquo;ll write falls back to a split pane instead.</p>
+    </div>
+
+    <h3>Key display-popup Flags</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Flag</th>
+          <th>Purpose</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>-w</code></td>
+          <td>Popup width (absolute or percentage)</td>
+          <td><code>-w 80%</code></td>
+        </tr>
+        <tr>
+          <td><code>-h</code></td>
+          <td>Popup height</td>
+          <td><code>-h 80%</code></td>
+        </tr>
+        <tr>
+          <td><code>-E</code></td>
+          <td>Close popup when the command exits</td>
+          <td><code>-E "claude -p 'hello'"</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Add Popup Support and Build dx ask</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Check your tmux version</span>
+      <div class="step-content">
+        <p>Confirm you have tmux 3.2 or higher:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux -V
+<span class="comment"># Need 3.2 or higher for popups</span></div>
+        </div>
+        <p>If your version is older, the popup helper will still work&mdash;it falls back to <code>tmux split-window</code> instead of <code>display-popup</code>.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Add a popup helper to lib.sh</span>
+      <div class="step-content">
+        <p>Append an <code>ai_popup</code> function to your shared library. This wraps <code>display-popup</code> with size defaults and a version check:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/lib.sh (append)</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>
+# Run AI in a tmux popup (tmux 3.2+)
+ai_popup() {
+  local prompt="$1"
+  local width="${2:-80%}"
+  local height="${3:-80%}"
+
+  # Check tmux version supports popups
+  if ! tmux display-popup -h 2>&amp;1 | grep -q "usage"; then
+    echo "Popups require tmux 3.2+. Falling back to split."
+    tmux split-window -h "$AI_CLI -p \"$prompt\""
+    return
+  fi
+
+  tmux display-popup -w "$width" -h "$height" -E "$AI_CLI -p \"$prompt\""
+}</pre>
+          </div>
+        </div>
+        <p>Key details:</p>
+        <ul>
+          <li><strong>Version detection</strong> &mdash; Runs <code>tmux display-popup -h</code> and checks whether the help text appears. If the command doesn&rsquo;t exist (older tmux), it falls back to a split pane.</li>
+          <li><strong>Default size</strong> &mdash; Width and height default to <code>80%</code> of the terminal, but callers can override both.</li>
+          <li><strong><code>-E</code> flag</strong> &mdash; Tells tmux to close the popup automatically when the AI command exits.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Create the ask command</span>
+      <div class="step-content">
+        <p>This command takes a question as arguments, opens a popup with the AI response, and closes when done:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/commands/ask</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+parse_ai_flag "$@"
+
+# Remove --ai flag from arguments
+QUESTION=""
+for arg in "$@"; do
+  case "$arg" in
+    --ai=*) ;;
+    *) QUESTION="$QUESTION $arg" ;;
+  esac
+done
+QUESTION=$(echo "$QUESTION" | xargs)  # trim whitespace
+
+if [[ -z "$QUESTION" ]]; then
+  echo "Usage: dx ask 'your question here'"
+  exit 1
+fi
+
+# If in tmux, use popup; otherwise just run
+if [[ -n "$TMUX" ]]; then
+  tmux display-popup -w 80% -h 80% -E "$AI_CLI -p \"$QUESTION\""
+else
+  ai_prompt "$QUESTION"
+fi</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x commands/ask</div>
+        </div>
+        <p>Key details:</p>
+        <ul>
+          <li><strong>Argument collection</strong> &mdash; All non-flag arguments are concatenated into a single question string, so both <code>dx ask "my question"</code> and <code>dx ask my question</code> work.</li>
+          <li><strong><code>xargs</code> trim</strong> &mdash; Strips leading and trailing whitespace from the assembled question.</li>
+          <li><strong>tmux check</strong> &mdash; If you&rsquo;re not inside tmux, the command runs the AI directly in the terminal instead of trying to open a popup.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Test the popup</span>
+      <div class="step-content">
+        <p>You must be inside tmux for popups to work. Start a tmux session if you&rsquo;re not already in one:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Start tmux if not already inside</span>
+tmux
+
+<span class="comment"># Try a quick question</span>
+~/projects/dx/dx ask "What's the difference between git merge and rebase?"</div>
+        </div>
+        <p>A floating overlay appears covering 80% of your terminal. The AI processes the question and prints its response inside the popup. When it finishes, the popup closes automatically and you&rsquo;re back to your original layout&mdash;nothing moved, nothing changed.</p>
+        <p>Your project structure now looks like this:</p>
+        <div class="file-tree"><code>~/projects/dx/
+├── dx              # Main dispatcher script
+├── lib.sh          # Shared AI functions (now with ai_popup)
+└── commands/
+    ├── review      # AI-powered code review
+    ├── pr          # AI-generated pull requests
+    ├── explain     # Interactive code explainer
+    ├── test        # Test runner with AI analysis
+    ├── standup     # Git activity summarizer
+    └── ask         # Quick popup Q&amp;A</code></div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>dx ask</code> opens a floating popup with the AI response</li>
+      <li>The popup closes automatically when the AI finishes</li>
+      <li>Falls back gracefully to a split pane or direct output if popups aren&rsquo;t available</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="dx-09-background-watchers.html">Lesson 9: Background Watchers</a>, you&rsquo;ll build <code>dx watch</code>&mdash;a command that monitors your files for changes and runs AI analysis on each save, using a background tmux session to keep the watcher running independently.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="dx-07-standup-command.html" class="prev">The Standup Command</a>
+      <a href="dx-09-background-watchers.html" class="next">Background Watchers</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html" class="current">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
