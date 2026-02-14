@@ -170,7 +170,17 @@ Source: `dx-workflow-tutor.md`
 - [x] Phase 0: Repository setup (.nojekyll, style.css, copy-code.js, _template.html)
 - [x] Session 1: `index.html`
 - [x] Session 2: `setup.html`
-- [ ] Track 1: claude-01 through claude-10
-- [ ] Track 2: codex-01 through codex-10
-- [ ] Track 3: parallel-01 through parallel-10
+- [x] Track 1: claude-01 through claude-10
+- [x] Track 2: codex-01 through codex-10
+- [x] Track 3: parallel-01 through parallel-10
 - [ ] Track 4: dx-01 through dx-10
+  - [x] dx-01-skeleton.html
+  - [x] dx-02-choosing-ai.html
+  - [x] dx-03-review-command.html
+  - [x] dx-04-pr-command.html
+  - [x] dx-05-explain-command.html
+  - [ ] dx-06-test-command.html
+  - [ ] dx-07-standup-command.html
+  - [ ] dx-08-popup-mode.html
+  - [ ] dx-09-background-watchers.html
+  - [ ] dx-10-installation.html
