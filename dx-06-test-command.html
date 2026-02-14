@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Test Command — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Developer Toolkit</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">The Test Command</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>6</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Developer Toolkit</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead"><code>dx test</code> runs your project&rsquo;s test suite and, when tests fail, offers to send the failure output to an AI for analysis&mdash;opening the response in a tmux split pane so you can see the diagnosis right alongside your code. This lesson teaches pane management from within a script.</p>
+
+    <!-- CONCEPT -->
+    <h2>Split-Pane AI Analysis</h2>
+
+    <p>The previous commands were either non-interactive (review, PR, standup) or opened a dedicated session (explain). <code>dx test</code> introduces a third pattern: <em>split-pane analysis</em>. When tests fail inside tmux, the command splits the current window horizontally and launches the AI in the new pane with the failure output pre-loaded.</p>
+
+    <p>The command auto-detects your test runner based on project files:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Project File</th>
+          <th>Test Command</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>package.json</code></td>
+          <td><code>npm test</code></td>
+        </tr>
+        <tr>
+          <td><code>Cargo.toml</code></td>
+          <td><code>cargo test</code></td>
+        </tr>
+        <tr>
+          <td><code>go.mod</code></td>
+          <td><code>go test ./...</code></td>
+        </tr>
+        <tr>
+          <td><code>pytest.ini</code> / <code>setup.py</code></td>
+          <td><code>pytest</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>If none of these files exist, you can pass a custom test command as an argument. The workflow is: run tests &rarr; capture output &rarr; check exit code &rarr; if failure, prompt the user &rarr; open AI in a split pane (or run directly if not inside tmux).</p>
+
+    <div class="callout info">
+      <p><strong>Why a split pane?</strong> Unlike <code>dx explain</code>, which creates its own session, <code>dx test</code> is designed to run <em>inside</em> your existing tmux layout. A horizontal split keeps your test output on the left and the AI analysis on the right, so you can read both at once and immediately start fixing the issue.</p>
+    </div>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Build the Test Command</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create the test command</span>
+      <div class="step-content">
+        <p>This script detects the test runner, captures output, and opens a split pane for AI analysis when tests fail:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/commands/test</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+parse_ai_flag "$@"
+
+# Detect test runner
+if [[ -f "package.json" ]]; then
+  TEST_CMD="npm test"
+elif [[ -f "Cargo.toml" ]]; then
+  TEST_CMD="cargo test"
+elif [[ -f "go.mod" ]]; then
+  TEST_CMD="go test ./..."
+elif [[ -f "pytest.ini" ]] || [[ -f "setup.py" ]]; then
+  TEST_CMD="pytest"
+else
+  TEST_CMD="${1:-echo 'No test runner detected'}"
+fi
+
+echo "Running: $TEST_CMD"
+echo ""
+
+# Run tests, capture output
+TEST_OUTPUT=$(mktemp)
+set +e
+$TEST_CMD 2&gt;&amp;1 | tee "$TEST_OUTPUT"
+TEST_EXIT=$?
+set -e
+
+if [[ $TEST_EXIT -eq 0 ]]; then
+  echo ""
+  echo "✓ All tests passed!"
+  rm "$TEST_OUTPUT"
+  exit 0
+fi
+
+echo ""
+echo "✗ Tests failed (exit code: $TEST_EXIT)"
+echo ""
+read -p "Analyze failures with $AI_CLI? [Y/n] " -n 1 -r
+echo ""
+
+if [[ $REPLY =~ ^[Nn]$ ]]; then
+  rm "$TEST_OUTPUT"
+  exit $TEST_EXIT
+fi
+
+# Get the failure output (last 100 lines to avoid token limits)
+FAILURES=$(tail -100 "$TEST_OUTPUT")
+rm "$TEST_OUTPUT"
+
+# Create analysis prompt
+PROMPT="These tests failed. Analyze the failures and suggest fixes:
+
+\`\`\`
+$FAILURES
+\`\`\`
+
+For each failure:
+1. What's the likely cause?
+2. How to fix it?
+3. Show the fix if it's simple."
+
+# Check if we're in tmux
+if [[ -n "$TMUX" ]]; then
+  # Split pane and run AI there
+  tmux split-window -h "$AI_CLI"
+  sleep 2
+  tmux send-keys "$PROMPT" Enter
+
+  echo "AI analysis in right pane. Switch with Ctrl+J ←/→"
+else
+  # Not in tmux, just run directly
+  ai_prompt "$PROMPT"
+fi</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x commands/test</div>
+        </div>
+        <p>Key details:</p>
+        <ul>
+          <li><strong>Test runner detection</strong> &mdash; Checks for common project files (<code>package.json</code>, <code>Cargo.toml</code>, <code>go.mod</code>, <code>pytest.ini</code>) and picks the right test command automatically.</li>
+          <li><strong><code>set +e</code> / <code>set -e</code></strong> &mdash; Temporarily disables <code>errexit</code> so the script doesn&rsquo;t abort when tests fail. The exit code is captured in <code>$TEST_EXIT</code> instead.</li>
+          <li><strong><code>tee</code></strong> &mdash; Shows test output in the terminal while simultaneously saving it to a temp file for later AI analysis.</li>
+          <li><strong><code>tail -100</code></strong> &mdash; Trims the output to the last 100 lines before sending to the AI, avoiding token limits on very long test runs.</li>
+          <li><strong><code>tmux split-window -h</code></strong> &mdash; The <code>-h</code> flag creates a horizontal split (left/right). The AI launches in the new right-hand pane.</li>
+          <li><strong>Fallback</strong> &mdash; If you&rsquo;re not inside tmux, the script runs the AI directly in the current terminal instead of trying to split.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Create a test project with a failing test</span>
+      <div class="step-content">
+        <p>You need a project with an actual test failure to exercise this command. Create a quick Node.js project with a deliberate bug:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">mkdir -p ~/projects/test-example &amp;&amp; cd ~/projects/test-example
+npm init -y</div>
+        </div>
+        <p>Create a module and a test file:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/test-example/sum.js</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>function sum(a, b) {
+  return a + b;
+}
+module.exports = sum;</pre>
+          </div>
+        </div>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/test-example/sum.test.js</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>const sum = require('./sum');
+
+test('adds 1 + 2 to equal 3', () =&gt; {
+  expect(sum(1, 2)).toBe(3);
+});
+
+test('adds negative numbers', () =&gt; {
+  expect(sum(-1, -1)).toBe(-3);  // Bug: should be -2
+});</pre>
+          </div>
+        </div>
+        <p>Install Jest and confirm the test fails:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">npm install --save-dev jest
+npx jest</div>
+        </div>
+        <p>The second test expects <code>-3</code> but <code>sum(-1, -1)</code> returns <code>-2</code>. Jest will report the failure.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Run dx test and analyze the failure</span>
+      <div class="step-content">
+        <p>From inside the test project directory, run:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/test-example
+~/projects/dx/dx test</div>
+        </div>
+        <p>The command will:</p>
+        <ol>
+          <li>Detect <code>package.json</code> and run <code>npm test</code></li>
+          <li>Show the test output (with the failure)</li>
+          <li>Ask <em>&ldquo;Analyze failures with claude?&rdquo;</em></li>
+          <li>If you answer <strong>Y</strong> and you&rsquo;re in tmux, split the window and open the AI with the failure context</li>
+        </ol>
+        <p>Switch between panes with <code>Ctrl+J &larr;</code> and <code>Ctrl+J &rarr;</code> to read the AI&rsquo;s diagnosis alongside the original output.</p>
+        <p>Your project structure now looks like this:</p>
+        <div class="file-tree"><code>~/projects/dx/
+├── dx              # Main dispatcher script
+├── lib.sh          # Shared AI functions
+└── commands/
+    ├── review      # AI-powered code review
+    ├── pr          # AI-generated pull requests
+    ├── explain     # Interactive code explainer
+    └── test        # Test runner with AI analysis</code></div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>dx test</code> auto-detects the test runner and executes your test suite</li>
+      <li>On failure, it offers to send the output to an AI for analysis</li>
+      <li>If running inside tmux, the AI opens in a split pane for side-by-side viewing</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="dx-07-standup-command.html">Lesson 7: The Standup Command</a>, you&rsquo;ll build <code>dx standup</code>&mdash;a command that summarizes your recent git activity into a standup-ready report, perfect for async standups or remembering what you worked on yesterday.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="dx-05-explain-command.html" class="prev">The Explain Command</a>
+      <a href="dx-07-standup-command.html" class="next">The Standup Command</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html" class="current">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
