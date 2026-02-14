@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Standup Command — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Developer Toolkit</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">The Standup Command</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>7</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Developer Toolkit</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead"><code>dx standup</code> summarizes your recent git activity into a standup-ready report. It pulls your commits and file-change stats, sends them to an AI for summarization, and outputs a structured update&mdash;perfect for async standups or simply remembering what you worked on yesterday.</p>
+
+    <!-- CONCEPT -->
+    <h2>Git History as AI Context</h2>
+
+    <p>This command returns to the non-interactive pattern you used for <code>dx review</code> and <code>dx pr</code>: gather data, construct a prompt, run the AI, print the result, exit. The difference is in <em>what</em> gets collected. Instead of staged diffs or commit ranges, <code>dx standup</code> queries your git log filtered by author and time range.</p>
+
+    <p>The command collects two pieces of information:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Git Command</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Commit summaries</td>
+          <td><code>git log --oneline --all</code></td>
+          <td>A concise list of what was done</td>
+        </tr>
+        <tr>
+          <td>File change stats</td>
+          <td><code>git log --stat --all</code></td>
+          <td>Which files changed and by how much</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Both are filtered with <code>--author</code> (your email from <code>git config</code>) and <code>--since</code> (defaulting to <code>"yesterday"</code>). The AI then transforms this raw log into a structured standup format with three sections: what was done, what&rsquo;s next, and any blockers it can infer.</p>
+
+    <div class="callout info">
+      <p><strong>Customizable time range:</strong> Pass <code>--since="3 days ago"</code> or <code>--since="last monday"</code> to adjust the window. Git&rsquo;s date parsing is flexible&mdash;it accepts relative dates, ISO dates, and natural-language expressions.</p>
+    </div>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Build the Standup Command</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create the standup command</span>
+      <div class="step-content">
+        <p>This script queries your git history, builds a structured prompt, and gets an AI-generated standup summary:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/commands/standup</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+parse_ai_flag "$@"
+
+# Parse optional --since flag
+SINCE="yesterday"
+for arg in "$@"; do
+  case "$arg" in
+    --since=*) SINCE="${arg#--since=}" ;;
+  esac
+done
+
+# Get git log
+AUTHOR=$(git config user.email)
+COMMITS=$(git log --author="$AUTHOR" --since="$SINCE" --oneline --all 2&gt;/dev/null || echo "")
+DIFF_STAT=$(git log --author="$AUTHOR" --since="$SINCE" --stat --all 2&gt;/dev/null | tail -50 || echo "")
+
+if [[ -z "$COMMITS" ]]; then
+  echo "No commits found since $SINCE"
+  echo "Try: dx standup --since='3 days ago'"
+  exit 0
+fi
+
+echo "Generating standup summary with $AI_CLI..."
+echo ""
+
+PROMPT="Summarize this git activity for a standup update. Be concise and use bullet points.
+
+Commits since $SINCE:
+$COMMITS
+
+Files changed:
+$DIFF_STAT
+
+Format:
+**Yesterday/Recently:**
+- &lt;what was done&gt;
+
+**Today/Next:**
+- &lt;logical next steps based on the work&gt;
+
+**Blockers:**
+- &lt;any potential issues you can infer, or 'None'&gt;
+"
+
+ai_prompt "$PROMPT"</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x commands/standup</div>
+        </div>
+        <p>Key details:</p>
+        <ul>
+          <li><strong><code>--since</code> flag parsing</strong> &mdash; Loops through arguments looking for <code>--since=*</code> and extracts the value with parameter expansion (<code>${arg#--since=}</code>). Defaults to <code>"yesterday"</code> if not provided.</li>
+          <li><strong><code>git config user.email</code></strong> &mdash; Automatically filters the log to only your commits, so the standup reflects your work even in a shared repo.</li>
+          <li><strong><code>--all</code></strong> &mdash; Searches across all branches, catching work on feature branches that hasn&rsquo;t been merged yet.</li>
+          <li><strong><code>tail -50</code></strong> &mdash; Trims the diff stats to the last 50 lines to keep the prompt within token limits on busy days.</li>
+          <li><strong>Structured prompt format</strong> &mdash; The prompt explicitly requests a three-section standup format, so the AI output is ready to paste into Slack or a standup bot.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Test with your dx project</span>
+      <div class="step-content">
+        <p>You&rsquo;ve been building commands across several lessons, so there should be commit history to work with. Stage and commit everything first:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/dx
+git add -A
+git commit -m "Add dx toolkit commands"</div>
+        </div>
+        <p>Now generate a standup. Since the commits might not be from &ldquo;yesterday,&rdquo; widen the window:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">./dx standup --since="1 week ago"</div>
+        </div>
+        <p>You should see something like:</p>
+        <div class="prompt-box-dark"><strong>Yesterday/Recently:</strong>
+- Added dx toolkit commands including review, pr, explain, test, and standup
+- Set up project skeleton with dispatcher and shared AI library
+
+<strong>Today/Next:</strong>
+- Add popup mode for quick AI interactions
+- Implement file watcher for continuous analysis
+
+<strong>Blockers:</strong>
+- None</div>
+        <p>The exact output depends on your git history and which AI you&rsquo;re using, but it should follow the three-section format.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Try different time ranges</span>
+      <div class="step-content">
+        <p>Experiment with different <code>--since</code> values to see how the summary changes:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Just today's work</span>
+./dx standup --since="today"
+
+<span class="comment"># Last three days</span>
+./dx standup --since="3 days ago"
+
+<span class="comment"># Since a specific date</span>
+./dx standup --since="2025-01-01"</div>
+        </div>
+        <p>If no commits are found in the given range, the script exits early with a helpful message suggesting you try a wider window.</p>
+        <p>Your project structure now looks like this:</p>
+        <div class="file-tree"><code>~/projects/dx/
+├── dx              # Main dispatcher script
+├── lib.sh          # Shared AI functions
+└── commands/
+    ├── review      # AI-powered code review
+    ├── pr          # AI-generated pull requests
+    ├── explain     # Interactive code explainer
+    ├── test        # Test runner with AI analysis
+    └── standup     # Git activity summarizer</code></div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>dx standup</code> summarizes your recent git activity into a structured standup report</li>
+      <li>The <code>--since</code> flag lets you adjust the time range (defaults to <code>"yesterday"</code>)</li>
+      <li>Output follows a consistent Yesterday / Today / Blockers format ready for sharing</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="dx-08-popup-mode.html">Lesson 8: Tmux Popup Mode</a>, you&rsquo;ll learn about tmux&rsquo;s floating popup windows and build <code>dx ask</code>&mdash;a command that opens a quick AI Q&amp;A overlay without disrupting your current layout.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="dx-06-test-command.html" class="prev">The Test Command</a>
+      <a href="dx-08-popup-mode.html" class="next">Tmux Popup Mode</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html" class="current">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
