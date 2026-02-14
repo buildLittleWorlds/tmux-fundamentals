@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capture and Review — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Multi-Agent Orchestration</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Capture and Review</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>9</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">AI agents produce a lot of output&mdash;status messages, generated code, error traces, conversational responses. Once a session ends, all of that scrollback vanishes unless you save it. In this lesson you&rsquo;ll capture full session histories to log files and build a summary script that gives you a quick overview of what each agent accomplished.</p>
+
+    <!-- CONCEPT -->
+    <h2>Why Capture Session Output</h2>
+
+    <p>You&rsquo;ve already used <code>tmux capture-pane</code> for quick peeks at agent output. But that command can do much more&mdash;with the <code>-S</code> flag, it captures the <strong>entire scrollback buffer</strong>, not just what&rsquo;s currently visible. This gives you a complete record of everything that happened in a session.</p>
+
+    <p>Session logs are useful for:</p>
+
+    <ul>
+      <li><strong>Debugging</strong> &mdash; trace back to where something went wrong</li>
+      <li><strong>Code review</strong> &mdash; see exactly what the agent generated and in what order</li>
+      <li><strong>Documentation</strong> &mdash; keep a record of how a feature was built</li>
+      <li><strong>Learning</strong> &mdash; review the agent&rsquo;s problem-solving approach after the fact</li>
+    </ul>
+
+    <!-- EXERCISE 1: CAPTURE SESSION HISTORIES -->
+    <h2>Exercise: Capture Session Histories</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Capture Claude&rsquo;s full session history</span>
+      <div class="step-content">
+        <p>Save the entire scrollback buffer from the Claude session to a log file:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux capture-pane -t claude-api -p -S -1000 &gt; ~/projects/bookmarks/claude-session.log</div>
+        </div>
+        <p>The <code>-S -1000</code> flag tells tmux to start capturing from 1000 lines back in the scrollback buffer. The <code>-p</code> flag sends the output to stdout so you can redirect it to a file.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Capture Codex&rsquo;s full session history</span>
+      <div class="step-content">
+        <p>Do the same for the Codex session:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux capture-pane -t codex-cli -p -S -1000 &gt; ~/projects/bookmarks/codex-session.log</div>
+        </div>
+        <p>Now you have two log files&mdash;one for each agent&mdash;that you can review, search, or diff at any time.</p>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <p><strong>Scrollback depth:</strong> The <code>-1000</code> value captures up to 1000 lines of history. If your agents have been especially chatty, increase it (e.g., <code>-S -5000</code>). The maximum depends on your tmux <code>history-limit</code> setting&mdash;the default is 2000 lines.</p>
+    </div>
+
+    <!-- EXERCISE 2: BUILD A SUMMARY SCRIPT -->
+    <h2>Exercise: Build a Summary Script</h2>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Create the summary script</span>
+      <div class="step-content">
+        <p>Write a script that reports on what each agent produced:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/bookmarks/summarize-session.sh</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+echo "=== Session Summary ==="
+echo ""
+echo "Files created by Claude (api/):"
+find api -type f -name "*.js" -o -name "*.json" 2&gt;/dev/null | head -10
+echo ""
+echo "Files created by Codex (cli/):"
+find cli -type f -name "*.js" -o -name "*.json" 2&gt;/dev/null | head -10
+echo ""
+echo "Recent Claude activity:"
+tail -20 claude-session.log 2&gt;/dev/null | grep -v "^$" | tail -5
+echo ""
+echo "Recent Codex activity:"
+tail -20 codex-session.log 2&gt;/dev/null | grep -v "^$" | tail -5</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x ~/projects/bookmarks/summarize-session.sh</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Run the summary</span>
+      <div class="step-content">
+        <p>Execute the script from the project root:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/bookmarks
+./summarize-session.sh</div>
+        </div>
+        <p>You&rsquo;ll see a quick report showing which files each agent created and their most recent activity. This is a fast way to get your bearings after stepping away from a session or before starting a new round of work.</p>
+      </div>
+    </div>
+
+    <h3>What the script reports</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Section</th>
+          <th>What it shows</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Files created by Claude</td>
+          <td>JavaScript and JSON files in <code>api/</code>&mdash;the backend artifacts</td>
+        </tr>
+        <tr>
+          <td>Files created by Codex</td>
+          <td>JavaScript and JSON files in <code>cli/</code>&mdash;the CLI artifacts</td>
+        </tr>
+        <tr>
+          <td>Recent Claude activity</td>
+          <td>The last 5 non-empty lines from Claude&rsquo;s session log</td>
+        </tr>
+        <tr>
+          <td>Recent Codex activity</td>
+          <td>The last 5 non-empty lines from Codex&rsquo;s session log</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>You can capture full session histories with <code>tmux capture-pane -S -1000</code></li>
+      <li>You have log files for both agents that persist after the sessions end</li>
+      <li>A summary script gives you a quick overview of both agents&rsquo; work</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-10-complete-workflow.html">Lesson 10: The Complete Workflow</a>, you&rsquo;ll put everything together&mdash;launch, assign, monitor, integrate, capture&mdash;into a single end-to-end orchestration run.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="parallel-08-session-scripts.html" class="prev">Session Scripts</a>
+      <a href="parallel-10-complete-workflow.html" class="next">The Complete Workflow</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html" class="current">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
