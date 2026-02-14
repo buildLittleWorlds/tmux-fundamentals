@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Control Dashboard — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Multi-Agent Orchestration</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">The Control Dashboard</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>4</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Switching between sessions to check on agents works, but it&rsquo;s slow. In this lesson you&rsquo;ll turn your control session into a proper monitoring dashboard&mdash;a three-pane layout where you can see both agents&rsquo; output live while keeping a command center at the bottom.</p>
+
+    <!-- CONCEPT -->
+    <h2>The Dashboard Layout</h2>
+
+    <p>The goal is a single window in your control session that shows everything at once:</p>
+
+    <div class="file-tree"><code>┌─────────────────┬─────────────────────────┐
+│ Claude tail     │ Codex tail              │
+├─────────────────┴─────────────────────────┤
+│              Command center               │
+└───────────────────────────────────────────┘</code></div>
+
+    <p>The top half is split into two monitoring panes, each running a <code>watch</code> command that continuously captures output from a background session. The bottom pane is where you type commands&mdash;sending tasks to agents, checking files, running tests.</p>
+
+    <h3>How it works</h3>
+
+    <p>The <code>watch</code> command re-runs a shell command every N seconds and displays the result. Combined with <code>tmux capture-pane</code>, it creates a live feed of what&rsquo;s happening in another session:</p>
+
+    <div class="copy-wrapper">
+      <button class="copy-btn">Copy</button>
+      <div class="terminal-block">watch -n 2 'tmux capture-pane -t session-name -p | tail -15'</div>
+    </div>
+
+    <p>This refreshes every 2 seconds (<code>-n 2</code>) and shows the last 15 lines of the target session. It&rsquo;s read-only&mdash;you&rsquo;re watching, not interacting.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Build the Dashboard</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Reset the control session layout</span>
+      <div class="step-content">
+        <p>Start with a clean slate by closing any existing panes, then build the three-pane layout:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Kill all panes except the current one</span>
+tmux kill-pane -a
+
+<span class="comment"># Split: top 70% and bottom 30%</span>
+tmux split-window -v -p 30
+
+<span class="comment"># Select the top pane and split it left/right</span>
+tmux select-pane -t 0
+tmux split-window -h</div>
+        </div>
+        <p>You now have three panes: top-left, top-right, and bottom.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Start the Claude monitor (top-left pane)</span>
+      <div class="step-content">
+        <p>You should already be in the top-left pane after the split. Start watching Claude&rsquo;s session:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Continuously show Claude's recent output</span>
+watch -n 2 'tmux capture-pane -t claude-api -p | tail -15'</div>
+        </div>
+        <p>You&rsquo;ll see the last 15 lines of Claude&rsquo;s session, refreshing every 2 seconds.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Start the Codex monitor (top-right pane)</span>
+      <div class="step-content">
+        <p>Move to the top-right pane and start watching Codex:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Navigate to top-right pane</span>
+Ctrl+J &rarr;</div>
+        </div>
+        <p>Then run:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Continuously show Codex's recent output</span>
+watch -n 2 'tmux capture-pane -t codex-cli -p | tail -15'</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Move to the command center (bottom pane)</span>
+      <div class="step-content">
+        <p>Navigate to the bottom pane&mdash;this is your workspace for the rest of the track:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Navigate to bottom pane</span>
+Ctrl+J &darr;</div>
+        </div>
+        <p>From here you can send commands to agents, check files, run tests, and manage the handoff&mdash;all while glancing up to see what each agent is doing.</p>
+      </div>
+    </div>
+
+    <!-- COMMANDS REFERENCE -->
+    <h2>Pane Layout Commands</h2>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>What It Does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tmux kill-pane -a</code></td>
+          <td>Close all panes except the current one</td>
+        </tr>
+        <tr>
+          <td><code>tmux split-window -v -p 30</code></td>
+          <td>Split horizontally, bottom pane gets 30% of height</td>
+        </tr>
+        <tr>
+          <td><code>tmux split-window -h</code></td>
+          <td>Split vertically (left/right), equal width</td>
+        </tr>
+        <tr>
+          <td><code>tmux select-pane -t 0</code></td>
+          <td>Select pane by index number</td>
+        </tr>
+        <tr>
+          <td><code>watch -n 2 'command'</code></td>
+          <td>Re-run a command every 2 seconds, display output</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <p><strong>Tip:</strong> If the dashboard feels cramped, you can adjust the split ratio. Use <code>-p 40</code> instead of <code>-p 30</code> to give the command center more space, or resize panes interactively with <code>Ctrl+J</code> followed by holding an arrow key.</p>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>Top-left pane shows Claude&rsquo;s recent output, refreshing every 2 seconds</li>
+      <li>Top-right pane shows Codex&rsquo;s recent output, refreshing every 2 seconds</li>
+      <li>Bottom pane is your command center where you type commands</li>
+      <li>You can see both agents&rsquo; progress at a glance without switching sessions</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-05-integration-point.html">Lesson 5: Integration Point</a>, you&rsquo;ll use the command center to start the API server, test both components, and resolve the inevitable mismatches between what Claude built and what Codex expects.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="parallel-03-assigning-tasks.html" class="prev">Assigning Tasks</a>
+      <a href="parallel-05-integration-point.html" class="next">Integration Point</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html" class="current">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
