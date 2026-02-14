@@ -16,7 +16,7 @@ I'm building the companion website for the tmux + AI CLI tutorials.
 ## Context files — read all of these first:
 
 1. **Site plan** (architecture, content transformation rules, navigation):
-   /Users/familyplate/work/learning-tools/skills/TMUX-SITE-PLAN.md
+   /Users/familyplate/work/learning-tools/tmux-fundamentals/TMUX-SITE-PLAN.md
 
 2. **Source tutorial** (the content to transform):
    /Users/familyplate/work/learning-tools/tmux-claude/[SOURCE-FILE]
