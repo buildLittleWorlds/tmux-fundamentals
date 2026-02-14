@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The PR Command — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Developer Toolkit</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">The PR Command</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>4</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Developer Toolkit</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead"><code>dx pr</code> takes the pattern from <code>dx review</code> a step further&mdash;it generates a PR title and description from your commits using AI, shows you a preview, and then creates the pull request with <code>gh</code>. This is your first command that combines AI output with a real shell action.</p>
+
+    <!-- CONCEPT -->
+    <h2>AI Output as Input to Shell Commands</h2>
+
+    <p>The review command printed AI output and stopped. The PR command <em>parses</em> the AI&rsquo;s response and feeds it into another tool (<code>gh pr create</code>). This introduces a new challenge: you need the AI to respond in a predictable, parseable format.</p>
+
+    <p>The trick is a structured prompt with explicit format instructions and delimiters (<code>TITLE:</code>, <code>BODY:</code>, <code>END_BODY</code>). The script then uses <code>grep</code> and <code>sed</code> to extract each section. If parsing fails, it falls back to showing the raw output so you can copy-paste manually.</p>
+
+    <div class="callout warning">
+      <p><strong>Prerequisite:</strong> This command requires the <a href="https://cli.github.com/">GitHub CLI</a> (<code>gh</code>). Install it with <code>brew install gh</code> and authenticate with <code>gh auth login</code> before testing.</p>
+    </div>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Build the PR Command</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create the pr command</span>
+      <div class="step-content">
+        <p>This script detects the base branch, gathers commit history and diff stats, asks the AI for a title and body, then offers to create the PR:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/commands/pr</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+parse_ai_flag "$@"
+
+# Detect base branch
+BASE_BRANCH="${BASE_BRANCH:-main}"
+if ! git rev-parse --verify "$BASE_BRANCH" &gt;/dev/null 2&gt;&amp;1; then
+  BASE_BRANCH="master"
+fi
+
+# Get commits not in base branch
+COMMITS=$(git log "$BASE_BRANCH"..HEAD --oneline 2&gt;/dev/null || echo "")
+DIFF_STAT=$(git diff "$BASE_BRANCH"..HEAD --stat 2&gt;/dev/null || echo "")
+
+if [[ -z "$COMMITS" ]]; then
+  echo "No commits to include in PR."
+  echo "Make sure you're on a feature branch with commits ahead of $BASE_BRANCH"
+  exit 1
+fi
+
+echo "Generating PR description with $AI_CLI..."
+
+# Generate PR content
+PROMPT="Generate a GitHub PR title and description based on these commits:
+
+Commits:
+$COMMITS
+
+Files changed:
+$DIFF_STAT
+
+Format your response EXACTLY like this (I will parse it):
+TITLE: &lt;short title under 60 chars&gt;
+BODY:
+&lt;markdown body with:
+- Summary (1-2 sentences)
+- Changes (bullet points)
+- Testing notes (if applicable)&gt;
+END_BODY"
+
+RESPONSE=$(ai_prompt "$PROMPT")
+
+# Parse the response
+TITLE=$(echo "$RESPONSE" | grep "^TITLE:" | sed 's/^TITLE: //')
+BODY=$(echo "$RESPONSE" | sed -n '/^BODY:/,/^END_BODY/p' | sed '1d;$d')
+
+if [[ -z "$TITLE" ]]; then
+  echo "Failed to parse AI response. Raw output:"
+  echo "$RESPONSE"
+  exit 1
+fi
+
+echo ""
+echo "Generated PR:"
+echo "============="
+echo "Title: $TITLE"
+echo ""
+echo "Body:"
+echo "$BODY"
+echo ""
+echo "============="
+echo ""
+
+read -p "Create this PR? [y/N] " -n 1 -r
+echo ""
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  gh pr create --title "$TITLE" --body "$BODY"
+else
+  echo "PR creation cancelled."
+fi</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x commands/pr</div>
+        </div>
+        <p>Walk through the key sections:</p>
+        <ul>
+          <li><strong>Base branch detection</strong> &mdash; Defaults to <code>main</code>, falls back to <code>master</code> if it doesn&rsquo;t exist. You can override with <code>BASE_BRANCH=develop dx pr</code>.</li>
+          <li><strong>Commit gathering</strong> &mdash; <code>git log main..HEAD --oneline</code> gets only the commits on your feature branch. <code>git diff --stat</code> shows which files changed and how much.</li>
+          <li><strong>Structured prompt</strong> &mdash; The format instructions with <code>TITLE:</code>, <code>BODY:</code>, and <code>END_BODY</code> delimiters make the AI&rsquo;s response machine-parseable.</li>
+          <li><strong>Confirmation step</strong> &mdash; The <code>read -p</code> prompt lets you review before the PR is actually created. Saying no cancels cleanly.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Install the GitHub CLI (if needed)</span>
+      <div class="step-content">
+        <p>The <code>gh</code> CLI handles authentication and PR creation. If you don&rsquo;t have it yet:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># macOS</span>
+brew install gh
+gh auth login</div>
+        </div>
+        <p>Follow the interactive prompts to authenticate with your GitHub account. You only need to do this once.</p>
+        <p>Your project structure now looks like this:</p>
+        <div class="file-tree"><code>~/projects/dx/
+├── dx              # Main dispatcher script
+├── lib.sh          # Shared AI functions
+└── commands/
+    ├── review      # AI-powered code review
+    └── pr          # AI-generated pull requests</code></div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>dx pr</code> generates a title and description from your branch&rsquo;s commits</li>
+      <li>A preview is shown before the PR is created</li>
+      <li>Confirming with <code>y</code> uses <code>gh</code> to create the pull request</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="dx-05-explain-command.html">Lesson 5: The Explain Command</a>, you&rsquo;ll build your first <em>interactive</em> subcommand&mdash;<code>dx explain</code> opens an AI conversation in a tmux session with a file&rsquo;s contents pre-loaded, so you can ask follow-up questions.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="dx-03-review-command.html" class="prev">The Review Command</a>
+      <a href="dx-05-explain-command.html" class="next">The Explain Command</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html" class="current">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
