@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copy Mode (Scrolling Back) — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">tmux + Claude Code</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Copy Mode (Scrolling Back)</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>8</strong> of 10</span>
+      <span class="meta-pill"><strong>Beginner</strong></span>
+      <span class="meta-pill">Track: tmux + Claude Code</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Terminal output scrolls away fast&mdash;especially when Claude is generating code. Copy mode freezes the pane and lets you scroll back through history, search for specific text, and copy content. This is essential for reviewing Claude&rsquo;s longer responses and finding specific code blocks in its output.</p>
+
+    <!-- CONCEPT -->
+    <h2>What Is Copy Mode?</h2>
+
+    <p>Normally, your terminal is in <strong>interactive mode</strong>&mdash;keystrokes go to the running program. <strong>Copy mode</strong> temporarily turns your pane into a read-only viewer where keystrokes navigate and search instead. Think of it like a built-in pager (similar to <code>less</code>) for everything that&rsquo;s appeared in the pane.</p>
+
+    <p>When you enter copy mode, you&rsquo;ll see a position indicator in the top-right corner of the pane showing where you are in the scrollback buffer. Your shell or running program is paused from your perspective&mdash;it keeps running, but new output won&rsquo;t scroll the view until you exit copy mode.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Generate some output to scroll through</span>
+      <div class="step-content">
+        <p>In either pane, run this command to produce 100 lines of output:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">for i in {1..100}; do echo "Line $i: The quick brown fox"; done</div>
+        </div>
+        <p>Most of this output has scrolled past the visible area. Normally it&rsquo;s gone&mdash;but not with copy mode.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Enter copy mode</span>
+      <div class="step-content">
+        <p>Press:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">Ctrl+J [</div>
+        </div>
+        <p>Notice the indicator in the top-right corner showing your position. The pane is now frozen&mdash;you can navigate freely.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Navigate the scrollback</span>
+      <div class="step-content">
+        <p>Try each of these navigation commands:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Scroll line by line</span>
+&uarr; / &darr;
+<span class="comment"># Scroll a full page</span>
+Page Up / Page Down
+<span class="comment"># Jump to the very top</span>
+g
+<span class="comment"># Jump to the very bottom</span>
+G</div>
+        </div>
+        <p>Scroll up until you find <code>Line 1: The quick brown fox</code> at the top of the output.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Search for text</span>
+      <div class="step-content">
+        <p>Still in copy mode, search for specific text:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Search forward for "fox"</span>
+/fox
+<span class="comment"># Jump to next match</span>
+n
+<span class="comment"># Jump to previous match</span>
+N
+<span class="comment"># Search backward for "brown"</span>
+?brown</div>
+        </div>
+        <p>Search is invaluable when Claude produces long output and you need to find a specific function, error message, or code block.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Exit copy mode</span>
+      <div class="step-content">
+        <p>When you&rsquo;re done browsing, exit copy mode:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">q</div>
+        </div>
+        <p>You can also press <code>Escape</code>. The pane returns to interactive mode and any new output appears normally.</p>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>Ctrl+J [</code> enters copy mode</li>
+      <li>You can scroll through the full output history</li>
+      <li><code>/</code> and <code>?</code> search forward and backward</li>
+      <li><code>q</code> exits copy mode</li>
+    </ul>
+
+    <!-- COPYING TEXT -->
+    <h2>Copying and Pasting Text</h2>
+
+    <p>Copy mode isn&rsquo;t just for reading&mdash;you can select and copy text directly within tmux, then paste it into any pane:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Key</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1</strong></td>
+          <td><code>Space</code></td>
+          <td>Start selection at the cursor position</td>
+        </tr>
+        <tr>
+          <td><strong>2</strong></td>
+          <td>Arrow keys</td>
+          <td>Move to expand the selection</td>
+        </tr>
+        <tr>
+          <td><strong>3</strong></td>
+          <td><code>Enter</code></td>
+          <td>Copy the selection (and exit copy mode)</td>
+        </tr>
+        <tr>
+          <td><strong>4</strong></td>
+          <td><code>Ctrl+J ]</code></td>
+          <td>Paste the copied text into any pane</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <p><strong>Why this matters with Claude:</strong> When Claude produces a code block you want to use elsewhere&mdash;say, a command it suggested or a config snippet&mdash;you can enter copy mode, select just that text, copy it, switch panes, and paste it. No mouse required.</p>
+    </div>
+
+    <!-- NAVIGATION REFERENCE -->
+    <h2>Copy Mode Quick Reference</h2>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J [</code></td>
+          <td>Enter copy mode</td>
+        </tr>
+        <tr>
+          <td><code>&uarr; / &darr;</code></td>
+          <td>Scroll line by line</td>
+        </tr>
+        <tr>
+          <td><code>Page Up / Page Down</code></td>
+          <td>Scroll by page</td>
+        </tr>
+        <tr>
+          <td><code>g / G</code></td>
+          <td>Jump to top / bottom</td>
+        </tr>
+        <tr>
+          <td><code>/pattern</code></td>
+          <td>Search forward</td>
+        </tr>
+        <tr>
+          <td><code>?pattern</code></td>
+          <td>Search backward</td>
+        </tr>
+        <tr>
+          <td><code>n / N</code></td>
+          <td>Next / previous match</td>
+        </tr>
+        <tr>
+          <td><code>q</code> or <code>Escape</code></td>
+          <td>Exit copy mode</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="claude-09-headless-sessions.html">Lesson 9: Headless Sessions</a>, you&rsquo;ll learn to launch Claude in a detached session&mdash;fire-and-forget background agents that work while you do something else entirely.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="claude-07-background-tasks.html" class="prev">Background Tasks</a>
+      <a href="claude-09-headless-sessions.html" class="next">Headless Sessions</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html" class="current">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
