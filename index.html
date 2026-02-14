@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curriculum Overview — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html" class="current">Tracks</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Curriculum Overview</h1>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Four tracks of hands-on tutorials that teach you tmux by building real tools with AI coding assistants. Start with a beginner track to learn the fundamentals, then level up with advanced multi-agent orchestration and developer automation. Each track has 10 lessons that follow a Concept &rarr; Exercise &rarr; Checkpoint pattern.</p>
+
+    <!-- GETTING STARTED -->
+    <h2>Getting Started</h2>
+
+    <p>Before starting any track, run through the <a href="setup.html">Setup &amp; Configuration</a> page to configure your tmux prefix key, terminal settings, and AI CLI tools. It takes about five minutes.</p>
+
+    <div class="callout info">
+      <p><strong>Prerequisites:</strong></p>
+      <ul>
+        <li>tmux 3.0+ installed (<code>brew install tmux</code> on macOS)</li>
+        <li>An AI CLI installed: <a href="https://docs.anthropic.com/en/docs/claude-code/overview">Claude Code</a> or <a href="https://github.com/openai/codex">Codex CLI</a> (or both)</li>
+        <li>A terminal emulator</li>
+        <li>Basic command line familiarity</li>
+      </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- BEGINNER TRACKS -->
+    <h2>Beginner Tracks</h2>
+
+    <p>Choose one to start. Both teach the same tmux fundamentals &mdash; sessions, panes, windows, copy mode &mdash; while you build a working <code>td</code> todo CLI with your chosen AI assistant.</p>
+
+    <div class="card-grid">
+      <div class="card track-card">
+        <h3><a href="claude-01-first-session.html">tmux + Claude Code</a></h3>
+        <p class="course-card-meta">10 lessons &middot; Beginner</p>
+        <p>Learn tmux fundamentals while building a todo CLI with Claude Code. Covers the supervisor workflow, background tasks, headless sessions, and copy mode.</p>
+        <p><a href="claude-01-first-session.html">Start Track &rarr;</a></p>
+      </div>
+      <div class="card track-card">
+        <h3><a href="codex-01-first-session.html">tmux + Codex CLI</a></h3>
+        <p class="course-card-meta">10 lessons &middot; Beginner</p>
+        <p>Learn tmux fundamentals while building a todo CLI with Codex CLI. Covers multitasking, non-interactive mode, session resume/fork, and copy mode.</p>
+        <p><a href="codex-01-first-session.html">Start Track &rarr;</a></p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ADVANCED TRACKS -->
+    <h2>Advanced Tracks</h2>
+
+    <p>After completing a beginner track, choose one or both. These assume you know sessions, panes, windows, and <code>send-keys</code>.</p>
+
+    <div class="card-grid">
+      <div class="card track-card advanced">
+        <h3><a href="parallel-01-multi-session-architecture.html">Multi-Agent Orchestration</a></h3>
+        <p class="course-card-meta">10 lessons &middot; Advanced</p>
+        <p>Coordinate Claude and Codex across separate tmux sessions with a handoff workflow. Build a bookmark API (Claude) and CLI client (Codex) through staged integration.</p>
+        <p><a href="parallel-01-multi-session-architecture.html">Start Track &rarr;</a></p>
+      </div>
+      <div class="card track-card advanced">
+        <h3><a href="dx-01-skeleton.html">Developer Toolkit</a></h3>
+        <p class="course-card-meta">10 lessons &middot; Advanced</p>
+        <p>Build <code>dx</code> &mdash; a set of AI-powered developer commands using tmux scripting. Covers code review, PR generation, interactive explain, test analysis, popups, and file watchers.</p>
+        <p><a href="dx-01-skeleton.html">Start Track &rarr;</a></p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- RELATED -->
+    <h2>Related</h2>
+
+    <p>Looking for Claude Code Skills? The <a href="https://buildlittleworlds.github.io/claude-code-skills-basics-and-beyond/">Skills: Basics and Beyond</a> curriculum teaches you to build skills, hooks, custom subagents, agent teams, and automated workflows &mdash; all within Claude Code.</p>
+
+    <div class="callout success">
+      <p><strong>Ready?</strong> Start with <a href="setup.html">Setup &amp; Configuration</a>, then pick a beginner track.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION -->
+    <nav class="page-nav">
+      <span></span>
+      <a href="setup.html" class="next">Setup &amp; Configuration</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>

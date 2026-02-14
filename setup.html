@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup &amp; Configuration — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Getting Started</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Setup &amp; Configuration</h1>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Before starting any track, configure your tmux prefix key, terminal settings, and AI CLI tools. This page is a shared reference &mdash; bookmark it and come back whenever you need to check a setting or troubleshoot an issue.</p>
+
+    <!-- CTRL+J PREFIX SETUP -->
+    <h2>Ctrl+J Prefix Setup</h2>
+
+    <p>All tutorials in this curriculum use <code>Ctrl+J</code> as the tmux prefix key instead of the default <code>Ctrl+B</code>. This avoids conflicts with common shortcuts in AI CLIs and keeps your hands on the home row.</p>
+
+    <h3>How the Prefix Key Works</h3>
+
+    <p>tmux commands are two-step: press the prefix, release, then press the action key. For example:</p>
+
+    <ol>
+      <li>Press <code>Ctrl+J</code> (hold Ctrl, tap j, release both)</li>
+      <li>Then press the action key (e.g., <code>d</code> to detach, <code>%</code> to split)</li>
+    </ol>
+
+    <p>When you see <code>Ctrl+J d</code> in a tutorial, that means: press <code>Ctrl+J</code>, release, then press <code>d</code>.</p>
+
+    <h3>Configure tmux</h3>
+
+    <p>Add the following to your <code>~/.tmux.conf</code> file (create it if it doesn&rsquo;t exist):</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">~/.tmux.conf</div>
+      <pre># Use Ctrl+J as the tmux prefix
+unbind C-b
+unbind C-j
+unbind C-a
+set-option -g prefix C-j
+bind-key C-j send-prefix</pre>
+    </div>
+
+    <p>Reload the config without restarting tmux:</p>
+
+    <div class="terminal-block"><span class="prompt">$ </span>tmux source ~/.tmux.conf</div>
+
+    <!-- RECOMMENDED TMUX CONFIG -->
+    <h2>Recommended tmux Config</h2>
+
+    <p>These settings improve the experience when working with AI CLIs that produce long, colorful output:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">~/.tmux.conf (additional settings)</div>
+      <pre># True color support (for syntax highlighting)
+set -g default-terminal "xterm-256color"
+set-option -ga terminal-overrides ",xterm-256color:Tc"
+
+# Large scrollback (AI responses can be long)
+set -g history-limit 50000
+
+# Mouse support (easier scrolling)
+set -g mouse on
+
+# Start window numbering at 1
+set -g base-index 1
+
+# Better split keys (optional)
+bind | split-window -h
+bind - split-window -v</pre>
+    </div>
+
+    <!-- CLAUDE CODE KEYBINDING REMAP -->
+    <h2>Claude Code Keybinding Remap (Optional)</h2>
+
+    <p>Claude Code uses <code>Ctrl+J</code> by default to background the current task. Since we&rsquo;re using <code>Ctrl+J</code> as the tmux prefix, you may want to remap Claude&rsquo;s background-task key to avoid conflicts:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">~/.claude/keybindings.json</div>
+      <pre>{
+  "bindings": [
+    { "context": "chat", "keys": { "ctrl+x": "background_task" } }
+  ]
+}</pre>
+    </div>
+
+    <div class="callout info">
+      <p><strong>Note:</strong> This remap is optional. If you don&rsquo;t remap, pressing <code>Ctrl+J</code> inside Claude Code will trigger the tmux prefix instead of backgrounding. You can still use Claude&rsquo;s <code>/status</code> and <code>/resume</code> commands to manage background tasks.</p>
+    </div>
+
+    <!-- CODEX CLI TIP -->
+    <h2>Codex CLI: No-Alt-Screen Mode</h2>
+
+    <p>Codex CLI uses an alternate screen buffer by default, which can interfere with tmux scrollback. Launch Codex with the <code>--no-alt-screen</code> flag for better compatibility:</p>
+
+    <div class="terminal-block"><span class="prompt">$ </span>codex --no-alt-screen</div>
+
+    <p>This keeps Codex output in the normal scrollback buffer so you can use tmux copy mode (<code>Ctrl+J [</code>) to review previous output.</p>
+
+    <!-- TROUBLESHOOTING -->
+    <h2>Troubleshooting</h2>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Issue</th>
+          <th>Solution</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Shift+Enter submits instead of newline</td>
+          <td>Use <code>\</code> at end of line, or <code>Ctrl+X</code> to open an external editor</td>
+        </tr>
+        <tr>
+          <td>Can&rsquo;t copy text across pane borders</td>
+          <td>Hold Option (Mac) or Shift (Linux) while selecting</td>
+        </tr>
+        <tr>
+          <td>Colors look washed out</td>
+          <td>Ensure <code>terminal-overrides</code> is set in tmux.conf (see above)</td>
+        </tr>
+        <tr>
+          <td>Codex scrollback is hard to navigate</td>
+          <td>Launch Codex with <code>codex --no-alt-screen</code></td>
+        </tr>
+        <tr>
+          <td>Prefix key doesn&rsquo;t work</td>
+          <td>Run <code>tmux source ~/.tmux.conf</code> or restart tmux</td>
+        </tr>
+        <tr>
+          <td>tmux not installed</td>
+          <td><code>brew install tmux</code> (macOS) or <code>sudo apt install tmux</code> (Linux)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- QUICK REFERENCE CARD -->
+    <h2>Quick Reference Card</h2>
+
+    <h3>Session Management</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tmux new -s name</code></td>
+          <td>New named session</td>
+        </tr>
+        <tr>
+          <td><code>tmux attach -t name</code></td>
+          <td>Attach to session</td>
+        </tr>
+        <tr>
+          <td><code>tmux ls</code></td>
+          <td>List sessions</td>
+        </tr>
+        <tr>
+          <td><code>tmux kill-session -t name</code></td>
+          <td>Kill session</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J d</code></td>
+          <td>Detach from session</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J s</code></td>
+          <td>Session switcher</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Panes</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J %</code></td>
+          <td>Split vertically (left/right)</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J "</code></td>
+          <td>Split horizontally (top/bottom)</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J &uarr;&darr;&larr;&rarr;</code></td>
+          <td>Move between panes</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J x</code></td>
+          <td>Close current pane</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J z</code></td>
+          <td>Zoom pane (toggle fullscreen)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Windows</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J c</code></td>
+          <td>New window</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J n</code> / <code>Ctrl+J p</code></td>
+          <td>Next / previous window</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J 0-9</code></td>
+          <td>Jump to window by number</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J ,</code></td>
+          <td>Rename window</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J &amp;</code></td>
+          <td>Close window</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Copy Mode</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J [</code></td>
+          <td>Enter copy mode</td>
+        </tr>
+        <tr>
+          <td><code>&uarr;&darr;</code> / <code>PgUp</code> / <code>PgDn</code></td>
+          <td>Navigate</td>
+        </tr>
+        <tr>
+          <td><code>/</code> / <code>?</code></td>
+          <td>Search forward / backward</td>
+        </tr>
+        <tr>
+          <td><code>n</code> / <code>N</code></td>
+          <td>Next / previous match</td>
+        </tr>
+        <tr>
+          <td><code>Space</code></td>
+          <td>Start selection</td>
+        </tr>
+        <tr>
+          <td><code>Enter</code></td>
+          <td>Copy selection</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J ]</code></td>
+          <td>Paste</td>
+        </tr>
+        <tr>
+          <td><code>q</code></td>
+          <td>Exit copy mode</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Remote Commands (Advanced)</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tmux send-keys -t session 'cmd' Enter</code></td>
+          <td>Send command to a session</td>
+        </tr>
+        <tr>
+          <td><code>tmux capture-pane -t session -p</code></td>
+          <td>Get session output</td>
+        </tr>
+        <tr>
+          <td><code>tmux new-session -d -s name "cmd"</code></td>
+          <td>Detached session with command</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- CHOOSE YOUR TRACK -->
+    <div class="callout success">
+      <p><strong>Ready?</strong> Pick a beginner track to start: <a href="claude-01-first-session.html">tmux + Claude Code</a> or <a href="codex-01-first-session.html">tmux + Codex CLI</a>.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION -->
+    <nav class="page-nav">
+      <a href="index.html" class="prev">Curriculum Overview</a>
+      <span></span>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html" class="current">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
