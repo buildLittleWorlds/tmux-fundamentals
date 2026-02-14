@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Watchers — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Developer Toolkit</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Background Watchers</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>9</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Developer Toolkit</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Some tasks benefit from running continuously. <code>dx watch</code> monitors your files for changes and runs a quick AI review every time you save&mdash;all inside a detached tmux session that keeps working in the background while you code in another window.</p>
+
+    <!-- CONCEPT -->
+    <h2>Continuous Background Sessions</h2>
+
+    <p>Every <code>dx</code> command so far has been <em>on-demand</em>: you run it, it does its job, it exits (or you detach). <code>dx watch</code> introduces a fifth pattern&mdash;a <strong>long-running background process</strong> managed by tmux. The command enters an infinite loop, waiting for file changes and running AI analysis on each one.</p>
+
+    <p>The key tmux technique is launching the watcher in a detached session:</p>
+
+    <div class="copy-wrapper">
+      <button class="copy-btn">Copy</button>
+      <div class="terminal-block">tmux new-session -d -s dx-watcher "cd ~/projects/dx &amp;&amp; ./dx watch '*.sh'"</div>
+    </div>
+
+    <p>This creates a named session (<code>dx-watcher</code>), starts the watch command inside it, and returns you to your original terminal immediately. The watcher runs silently in the background. You can attach to check on it, detach again, or kill it when you&rsquo;re done.</p>
+
+    <p>File watching requires a platform-specific tool:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Tool</th>
+          <th>Install</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>macOS</td>
+          <td><code>fswatch</code></td>
+          <td><code>brew install fswatch</code></td>
+        </tr>
+        <tr>
+          <td>Linux</td>
+          <td><code>inotifywait</code></td>
+          <td><code>apt install inotify-tools</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The script detects which is available and uses it. If neither is installed, it exits with instructions.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Build the Watch Command</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create the watch command</span>
+      <div class="step-content">
+        <p>This script enters a loop that waits for file changes and sends each modified file to the AI for a quick review:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/commands/watch</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+parse_ai_flag "$@"
+
+# Parse arguments
+PATTERN="${1:-*.js}"
+shift 2&gt;/dev/null || true
+
+echo "dx watch - AI-powered file watcher"
+echo "Watching: $PATTERN"
+echo "AI: $AI_CLI"
+echo ""
+echo "This will analyze files when they change."
+echo "Press Ctrl+C to stop."
+echo ""
+
+# Check for fswatch or inotifywait
+if command -v fswatch &amp;&gt;/dev/null; then
+  WATCH_CMD="fswatch -1"
+elif command -v inotifywait &amp;&gt;/dev/null; then
+  WATCH_CMD="inotifywait -q -e modify"
+else
+  echo "Install fswatch (macOS) or inotify-tools (Linux) for file watching"
+  echo "  macOS: brew install fswatch"
+  echo "  Linux: apt install inotify-tools"
+  exit 1
+fi
+
+# Watch loop
+while true; do
+  CHANGED=$($WATCH_CMD $PATTERN 2&gt;/dev/null || echo "")
+
+  if [[ -n "$CHANGED" ]]; then
+    echo ""
+    echo "=== File changed: $CHANGED ==="
+    echo ""
+
+    CONTENT=$(cat "$CHANGED" 2&gt;/dev/null || echo "")
+
+    # Quick AI analysis
+    PROMPT="This file was just modified. Quick review (2-3 lines max):
+\`\`\`
+$CONTENT
+\`\`\`
+Any obvious issues?"
+
+    ai_prompt "$PROMPT"
+    echo ""
+    echo "Watching for more changes..."
+  fi
+done</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x commands/watch</div>
+        </div>
+        <p>Key details:</p>
+        <ul>
+          <li><strong>Pattern argument</strong> &mdash; The first argument sets the file glob to watch (defaults to <code>*.js</code>). Pass <code>'*.sh'</code>, <code>'*.py'</code>, or any glob your watcher supports.</li>
+          <li><strong>Tool detection</strong> &mdash; Uses <code>command -v</code> to check for <code>fswatch</code> (macOS) or <code>inotifywait</code> (Linux). The <code>-1</code> flag on <code>fswatch</code> makes it exit after a single event, matching the loop structure.</li>
+          <li><strong>Infinite loop</strong> &mdash; The <code>while true</code> loop blocks on the watch command, triggers an AI review when a file changes, then loops back to wait for the next change.</li>
+          <li><strong>Brief prompt</strong> &mdash; Requests a 2&ndash;3 line review to keep feedback fast and non-intrusive. This isn&rsquo;t a deep review&mdash;it&rsquo;s a quick sanity check on each save.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Launch the watcher in a background session</span>
+      <div class="step-content">
+        <p>Instead of running the watcher in your active terminal, start it in a detached tmux session:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux new-session -d -s dx-watcher "cd ~/projects/dx &amp;&amp; ./dx watch '*.sh'"</div>
+        </div>
+        <p>This returns immediately. The watcher is running in the background, waiting for any <code>.sh</code> file in the <code>dx</code> directory to change.</p>
+        <div class="callout info">
+          <p><strong>Detached sessions as services:</strong> This is the same <code>tmux new-session -d -s name "command"</code> pattern you used in <code>dx explain</code>, but here the session is designed to run indefinitely rather than waiting for you to attach. Think of it as a lightweight service manager&mdash;no <code>systemd</code> or <code>launchd</code> config required.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Trigger and observe the watcher</span>
+      <div class="step-content">
+        <p>Attach to the watcher session to see its output:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux attach -t dx-watcher</div>
+        </div>
+        <p>Now open a second terminal (or split your tmux window) and make a change to any <code>.sh</code> file in the dx project. For example, add a comment to <code>lib.sh</code>:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">echo "# Updated" &gt;&gt; ~/projects/dx/lib.sh</div>
+        </div>
+        <p>Back in the watcher session, you&rsquo;ll see the AI analysis appear automatically. The watcher detected the change, read the file contents, sent them to the AI, and printed the quick review.</p>
+        <p>Detach when you&rsquo;re done observing:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Press Ctrl+J d to detach</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Stop the watcher</span>
+      <div class="step-content">
+        <p>When you no longer need continuous monitoring, kill the session:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux kill-session -t dx-watcher</div>
+        </div>
+        <p>The watcher process and its session are gone. You can restart it anytime with the same <code>new-session -d</code> command from Step 2.</p>
+        <p>Your project structure now looks like this:</p>
+        <div class="file-tree"><code>~/projects/dx/
+├── dx              # Main dispatcher script
+├── lib.sh          # Shared AI functions
+└── commands/
+    ├── review      # AI-powered code review
+    ├── pr          # AI-generated pull requests
+    ├── explain     # Interactive code explainer
+    ├── test        # Test runner with AI analysis
+    ├── standup     # Git activity summarizer
+    ├── ask         # Quick popup Q&amp;A
+    └── watch       # Background file watcher</code></div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>dx watch</code> monitors files matching a glob pattern for changes</li>
+      <li>Each change triggers a quick AI review of the modified file</li>
+      <li>The watcher can run in a background tmux session, detached from your terminal</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="dx-10-installation.html">Lesson 10: Installation and Polish</a>, you&rsquo;ll add a version command, create an install script to make <code>dx</code> available system-wide, and review the complete toolkit you&rsquo;ve built across this track.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="dx-08-popup-mode.html" class="prev">Tmux Popup Mode</a>
+      <a href="dx-10-installation.html" class="next">Installation and Polish</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html" class="current">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
