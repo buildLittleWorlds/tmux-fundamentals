@@ -98,7 +98,7 @@ bind - split-window -v</pre>
     <!-- CLAUDE CODE KEYBINDING REMAP -->
     <h2>Claude Code Keybinding Remap (Optional)</h2>
 
-    <p>Claude Code uses <code>Ctrl+J</code> by default to background the current task. Since we&rsquo;re using <code>Ctrl+J</code> as the tmux prefix, you may want to remap Claude&rsquo;s background-task key to avoid conflicts:</p>
+    <p>Claude Code uses <code>Ctrl+B</code> by default to background the current task. Since we&rsquo;re using <code>Ctrl+J</code> as the tmux prefix (instead of the default <code>Ctrl+B</code>), this avoids any conflict with Claude&rsquo;s background-task key. If you still want a different background key, you can remap it:</p>
 
     <div class="skill-file">
       <div class="skill-file-header">~/.claude/keybindings.json</div>
@@ -110,7 +110,7 @@ bind - split-window -v</pre>
     </div>
 
     <div class="callout info">
-      <p><strong>Note:</strong> This remap is optional. If you don&rsquo;t remap, pressing <code>Ctrl+J</code> inside Claude Code will trigger the tmux prefix instead of backgrounding. You can still use Claude&rsquo;s <code>/status</code> and <code>/resume</code> commands to manage background tasks.</p>
+      <p><strong>Note:</strong> This remap is optional. Since we changed the tmux prefix to <code>Ctrl+J</code>, <code>Ctrl+B</code> is free for Claude Code&rsquo;s background feature and works without any conflict.</p>
     </div>
 
     <!-- CODEX CLI TIP -->

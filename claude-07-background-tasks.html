@@ -59,7 +59,7 @@
       </thead>
       <tbody>
         <tr>
-          <td><code>Ctrl+J</code></td>
+          <td><code>Ctrl+B</code></td>
           <td>Background the current Claude operation</td>
         </tr>
         <tr>
@@ -74,7 +74,7 @@
     </table>
 
     <div class="callout info">
-      <p><strong>Note:</strong> This is a Claude Code feature, not a tmux feature. The <code>Ctrl+J</code> shortcut here is intercepted by Claude Code itself to background its current operation. It works because your tmux prefix requires a second key after <code>Ctrl+J</code>&mdash;pressing <code>Ctrl+J</code> alone with no follow-up key is what Claude Code captures.</p>
+      <p><strong>Note:</strong> This is a Claude Code feature, not a tmux feature. The <code>Ctrl+B</code> shortcut is intercepted by Claude Code itself to background its current operation. Since we remapped the tmux prefix to <code>Ctrl+J</code>, there&rsquo;s no conflict&mdash;<code>Ctrl+B</code> goes straight to Claude Code.</p>
     </div>
 
     <!-- EXERCISE -->
@@ -110,7 +110,7 @@
         <p>While Claude is working, press:</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block">Ctrl+J</div>
+          <div class="terminal-block">Ctrl+B</div>
         </div>
         <p>This backgrounds the current Claude operation. Your prompt comes back immediately&mdash;Claude is still working, but now you can type.</p>
       </div>
@@ -163,7 +163,7 @@
     <h2>Checkpoint</h2>
 
     <ul class="checklist">
-      <li>You can background Claude with <code>Ctrl+J</code> (no follow-up key)</li>
+      <li>You can background Claude with <code>Ctrl+B</code></li>
       <li><code>/status</code> shows background task progress</li>
       <li><code>/resume</code> brings the task back to the foreground</li>
       <li><code>./td.sh done &lt;n&gt;</code> removes a task by number</li>
