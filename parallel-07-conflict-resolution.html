@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conflict Resolution — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Multi-Agent Orchestration</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Conflict Resolution</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>7</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">When two agents work in parallel, sooner or later they&rsquo;ll both reach for the same file. A shared config, a common dependency, a root-level manifest&mdash;any of these can become a collision point. In this lesson you&rsquo;ll learn to establish ownership boundaries so conflicts are prevented, and how to resolve them when they do occur.</p>
+
+    <!-- CONCEPT -->
+    <h2>Shared Files, Competing Agents</h2>
+
+    <p>So far, Claude and Codex have stayed in their own directories&mdash;<code>api/</code> and <code>cli/</code> respectively. But real projects have shared resources: configuration files, environment settings, package manifests. When you tell both agents to use a shared file, you risk one agent overwriting the other&rsquo;s changes.</p>
+
+    <p>The solution isn&rsquo;t to avoid shared files&mdash;it&rsquo;s to establish <strong>clear ownership rules</strong> and enforce them through your instructions to each agent.</p>
+
+    <!-- EXERCISE 1: CREATE A SHARED CONFIG -->
+    <h2>Exercise: Introduce a Shared Config</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create a shared configuration file</span>
+      <div class="step-content">
+        <p>From your control session, create a config file at the project root that both agents will need:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cat &gt; ~/projects/bookmarks/config.json &lt;&lt; 'EOF'
+{
+  "apiPort": 3000,
+  "apiHost": "localhost",
+  "version": "1.0.0"
+}
+EOF</div>
+        </div>
+        <p>This file lives outside both agents&rsquo; directories&mdash;it&rsquo;s shared infrastructure that both sides need to read.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Tell both agents to use the config</span>
+      <div class="step-content">
+        <p>Send each agent an instruction to integrate the shared config:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux send-keys -t claude-api "Update the API to read port and host from ../config.json" Enter
+tmux send-keys -t codex-cli "Update the CLI to read the API URL from ../config.json" Enter</div>
+        </div>
+        <p>Both agents now know about the same file. Watch what happens&mdash;will either agent try to <em>modify</em> the config rather than just reading it?</p>
+      </div>
+    </div>
+
+    <!-- EXERCISE 2: DETECT AND RESOLVE CONFLICTS -->
+    <h2>Exercise: Detect and Resolve Conflicts</h2>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Check for conflicting changes</span>
+      <div class="step-content">
+        <p>Use git to see if both agents touched the shared file:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/bookmarks
+git init
+git add -A
+git status</div>
+        </div>
+        <p>If <code>config.json</code> shows as modified, one or both agents changed it. Check the diff to see what happened:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">git diff config.json</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Enforce ownership with a directive</span>
+      <div class="step-content">
+        <p>If an agent modified the config when it should have only read it, correct the behavior:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux send-keys -t claude-api "Read config.json but don't modify it. Only the human edits config.json." Enter</div>
+        </div>
+        <p>Then restore the config to your intended version:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">git checkout config.json</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THE RULE OF OWNERSHIP -->
+    <h2>The Rule of Ownership</h2>
+
+    <p>For multi-agent handoff workflows, establish clear boundaries <strong>before</strong> assigning tasks. A simple ownership model:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Owner</th>
+          <th>Scope</th>
+          <th>Rule</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Claude</td>
+          <td><code>api/</code> directory</td>
+          <td>Full read/write within its directory</td>
+        </tr>
+        <tr>
+          <td>Codex</td>
+          <td><code>cli/</code> directory</td>
+          <td>Full read/write within its directory</td>
+        </tr>
+        <tr>
+          <td>Human (you)</td>
+          <td>Root config files, <code>handoff/</code></td>
+          <td>Agents read only; you make all edits</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warning">
+      <p><strong>State this explicitly in your prompts.</strong> AI agents don&rsquo;t remember implicit rules. Every time you send a task that involves a shared file, include the boundary: &ldquo;Read <code>../config.json</code> for the port value but do not modify it.&rdquo;</p>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>Both agents read from the shared config file without overwriting it</li>
+      <li>You understand the ownership model: each agent owns its directory, you own shared files</li>
+      <li>You can detect conflicts with <code>git status</code> and resolve them by directing agents</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-08-session-scripts.html">Lesson 8: Session Scripts</a>, you&rsquo;ll automate the entire multi-agent setup into a single launcher script so you can recreate your environment with one command.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="parallel-06-synchronized-commands.html" class="prev">Synchronized Commands</a>
+      <a href="parallel-08-session-scripts.html" class="next">Session Scripts</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html" class="current">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
