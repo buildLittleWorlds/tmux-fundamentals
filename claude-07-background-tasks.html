@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Claude Tasks — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">tmux + Claude Code</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Background Claude Tasks</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>7</strong> of 10</span>
+      <span class="meta-pill"><strong>Beginner</strong></span>
+      <span class="meta-pill">Track: tmux + Claude Code</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Sometimes Claude needs time to work through a larger change&mdash;a multi-feature request, a refactor, or a complex bug fix. Rather than watching and waiting, you can background the task and keep using the Claude pane. This lesson teaches you to send Claude&rsquo;s work into the background, check on its progress, and bring it back when it&rsquo;s done.</p>
+
+    <!-- CONCEPT -->
+    <h2>Backgrounding in Claude Code</h2>
+
+    <p>Claude Code has a built-in backgrounding feature. When Claude is working on a task, you can send that operation to the background and get your prompt back immediately. This lets you ask quick questions, check documentation, or start thinking about your next request&mdash;all while Claude continues working behind the scenes.</p>
+
+    <p>The key commands are:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>What It Does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J</code></td>
+          <td>Background the current Claude operation</td>
+        </tr>
+        <tr>
+          <td><code>/status</code></td>
+          <td>Check if a background task is still running</td>
+        </tr>
+        <tr>
+          <td><code>/resume</code></td>
+          <td>Bring the background task back to the foreground</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <p><strong>Note:</strong> This is a Claude Code feature, not a tmux feature. The <code>Ctrl+J</code> shortcut here is intercepted by Claude Code itself to background its current operation. It works because your tmux prefix requires a second key after <code>Ctrl+J</code>&mdash;pressing <code>Ctrl+J</code> alone with no follow-up key is what Claude Code captures.</p>
+    </div>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Go to your Claude pane</span>
+      <div class="step-content">
+        <p>Navigate to window 0 (<code>Ctrl+J 0</code>) and make sure you&rsquo;re in the <strong>Claude pane</strong> (right side). Claude Code should be running from earlier lessons.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Give Claude a bigger task</span>
+      <div class="step-content">
+        <p>Request multiple features at once&mdash;this will take Claude a moment to implement:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="prompt-box-dark">Add these features to td.sh:
+1. A "done" command: ./td.sh done 2 (marks task 2 as complete by removing it)
+2. A "clear" command: ./td.sh clear (removes all tasks)
+3. Better error handling for invalid commands</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Background the task</span>
+      <div class="step-content">
+        <p>While Claude is working, press:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">Ctrl+J</div>
+        </div>
+        <p>This backgrounds the current Claude operation. Your prompt comes back immediately&mdash;Claude is still working, but now you can type.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Check the task status</span>
+      <div class="step-content">
+        <p>With your prompt back, type:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">/status</div>
+        </div>
+        <p>This shows whether Claude is still working in the background. You can check as many times as you like.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Resume the task</span>
+      <div class="step-content">
+        <p>When you&rsquo;re ready to see Claude&rsquo;s output, bring the task back to the foreground:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">/resume</div>
+        </div>
+        <p>If the task already finished, you&rsquo;ll see the completed output. If it&rsquo;s still running, you&rsquo;ll watch it continue in real time.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">6</span>
+      <span class="step-title">Test the new features</span>
+      <div class="step-content">
+        <p>Once Claude is done, switch to the <strong>left pane</strong> (<code>Ctrl+J &larr;</code>) and test all three new features:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">./td.sh list
+./td.sh done 1
+./td.sh list
+./td.sh clear
+./td.sh list</div>
+        </div>
+        <p>The <code>done</code> command should remove a task by number, and <code>clear</code> should remove all tasks. After clearing, the list should be empty.</p>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>You can background Claude with <code>Ctrl+J</code> (no follow-up key)</li>
+      <li><code>/status</code> shows background task progress</li>
+      <li><code>/resume</code> brings the task back to the foreground</li>
+      <li><code>./td.sh done &lt;n&gt;</code> removes a task by number</li>
+      <li><code>./td.sh clear</code> removes all tasks</li>
+    </ul>
+
+    <!-- WHEN TO USE THIS -->
+    <h2>When to Use Backgrounding</h2>
+
+    <p>Backgrounding is most useful when Claude has enough context to work independently for a while:</p>
+
+    <ul>
+      <li><strong>Long refactors</strong> &mdash; restructuring code across multiple functions</li>
+      <li><strong>Multi-file changes</strong> &mdash; adding a feature that touches several files</li>
+      <li><strong>Quick questions</strong> &mdash; you want to ask Claude something else while a task runs</li>
+    </ul>
+
+    <div class="callout warning">
+      <p><strong>Keep in mind:</strong> Backgrounding works best for self-contained tasks where Claude doesn&rsquo;t need your input mid-way. If Claude is likely to ask a clarifying question, it&rsquo;s better to stay in the foreground so you can respond immediately.</p>
+    </div>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="claude-08-copy-mode.html">Lesson 8: Copy Mode</a>, you&rsquo;ll learn to scroll back through terminal output, search for specific text, and copy content&mdash;essential when Claude produces long output that scrolls past the visible screen.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="claude-06-windows.html" class="prev">Windows</a>
+      <a href="claude-08-copy-mode.html" class="next">Copy Mode</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html" class="current">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
