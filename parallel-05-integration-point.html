@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integration Point — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Multi-Agent Orchestration</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Integration Point</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>5</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Both agents have been building independently&mdash;Claude made an API, Codex made a CLI. Now comes the moment of truth: do the two halves actually work together? In this lesson you&rsquo;ll test the integration from your command center and learn how to diagnose and fix the mismatches that inevitably arise.</p>
+
+    <!-- CONCEPT -->
+    <h2>Why Integration Breaks</h2>
+
+    <p>Even with a handoff contract, two agents building in parallel will produce mismatches. This isn&rsquo;t a failure&mdash;it&rsquo;s the normal reality of multi-agent development. Your job as the orchestrator is to <strong>find the gaps</strong> and <strong>tell the right agent to fix them</strong>.</p>
+
+    <p>Common integration issues:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Issue</th>
+          <th>Example</th>
+          <th>Resolution</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Port mismatch</td>
+          <td>API runs on 3001, CLI expects 3000</td>
+          <td>Tell one agent to adjust</td>
+        </tr>
+        <tr>
+          <td>JSON structure mismatch</td>
+          <td>API returns <code>{bookmarks: [...]}</code>, CLI expects <code>[...]</code></td>
+          <td>Pick one agent to match the contract</td>
+        </tr>
+        <tr>
+          <td>Missing endpoint</td>
+          <td>CLI calls <code>/bookmarks/search</code>, API doesn&rsquo;t have it</td>
+          <td>Add to API or remove from CLI</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <p><strong>The orchestrator&rsquo;s role:</strong> You don&rsquo;t fix the code yourself. You identify the mismatch, decide which agent should change, and send the instruction via <code>send-keys</code>. The contract document is the source of truth&mdash;whoever deviated from it should be the one to fix it.</p>
+    </div>
+
+    <!-- EXERCISE 1 -->
+    <h2>Exercise: Test the Integration</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Start the API server</span>
+      <div class="step-content">
+        <p>From your command center (bottom pane of the dashboard), start Claude&rsquo;s API:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/bookmarks/api
+node index.js &amp;</div>
+        </div>
+        <p>The <code>&amp;</code> runs the server in the background so you can keep using the same pane. If you&rsquo;re not sure what the main file is called, check with <code>ls</code> first.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Test the API directly with curl</span>
+      <div class="step-content">
+        <p>Before involving the CLI, confirm the API works on its own:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Add a bookmark</span>
+curl -X POST http://localhost:3000/bookmarks \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com","title":"Example","tags":["test"]}'
+
+<span class="comment"># List bookmarks</span>
+curl http://localhost:3000/bookmarks</div>
+        </div>
+        <p>You should get a JSON response for each request. If the first command fails with &ldquo;connection refused,&rdquo; the server might be on a different port&mdash;check the API code or its startup output in the dashboard&rsquo;s top-left pane.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Test Codex&rsquo;s CLI against the running API</span>
+      <div class="step-content">
+        <p>Now try the CLI tool that Codex built:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/bookmarks/cli
+node bm.js add https://tmux.github.io "tmux homepage" --tags tools,terminal
+node bm.js list</div>
+        </div>
+        <p>If both commands return sensible output, the integration works. If you get errors, that&rsquo;s expected&mdash;the next exercise walks you through fixing them.</p>
+      </div>
+    </div>
+
+    <!-- EXERCISE 2 -->
+    <h2>Exercise: Fix an Integration Issue</h2>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Identify the mismatch</span>
+      <div class="step-content">
+        <p>Look at the error output from Step 3. Compare it against what you saw in Step 2. Common signs:</p>
+        <ul>
+          <li><strong>Connection refused</strong> &mdash; port mismatch between API and CLI</li>
+          <li><strong>Unexpected token / parse error</strong> &mdash; JSON format mismatch</li>
+          <li><strong>404 Not Found</strong> &mdash; CLI is calling an endpoint the API doesn&rsquo;t have</li>
+          <li><strong>Missing field</strong> &mdash; different property names in request or response</li>
+        </ul>
+        <p>Check the contract document to see who deviated:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cat ~/projects/bookmarks/handoff/api-contract.md</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Send the fix to the right agent</span>
+      <div class="step-content">
+        <p>Once you know which agent needs to change, send the fix request from your command center:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Example: Tell Claude to change the port</span>
+tmux send-keys -t claude-api "Change the server port from 3001 to 3000" Enter</div>
+        </div>
+        <p>Or if the CLI is the one that&rsquo;s wrong:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Example: Tell Codex to fix the expected response format</span>
+tmux send-keys -t codex-cli "The API returns {bookmarks: [...]}, not a bare array. Update bm.js to handle that." Enter</div>
+        </div>
+        <p>Watch the agent&rsquo;s progress in the dashboard, then retest once the fix is applied.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">6</span>
+      <span class="step-title">Retest until it works</span>
+      <div class="step-content">
+        <p>After the agent applies the fix, restart the API server if needed and rerun the CLI tests:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Kill the old server and restart</span>
+kill %1
+cd ~/projects/bookmarks/api &amp;&amp; node index.js &amp;
+
+<span class="comment"># Retest</span>
+cd ~/projects/bookmarks/cli
+node bm.js add https://test.com "Test Bookmark" --tags demo
+node bm.js list</div>
+        </div>
+        <p>Repeat the identify &rarr; fix &rarr; retest cycle until both components work together cleanly.</p>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>The API server is running and responds to <code>curl</code> requests</li>
+      <li>The CLI can successfully add and list bookmarks against the running API</li>
+      <li>You&rsquo;ve resolved at least one integration issue by directing an agent to fix it</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-06-synchronized-commands.html">Lesson 6: Synchronized Commands</a>, you&rsquo;ll learn how to send the same command to multiple sessions at once and compare their outputs side by side.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="parallel-04-control-dashboard.html" class="prev">The Control Dashboard</a>
+      <a href="parallel-06-synchronized-commands.html" class="next">Synchronized Commands</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html" class="current">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
