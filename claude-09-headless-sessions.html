@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Headless Claude Sessions — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">tmux + Claude Code</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Headless Claude Sessions</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>9</strong> of 10</span>
+      <span class="meta-pill"><strong>Beginner</strong></span>
+      <span class="meta-pill">Track: tmux + Claude Code</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Up to now, you&rsquo;ve always been watching Claude work. But what if you could launch Claude in a session you never attach to&mdash;a fire-and-forget background agent? Headless sessions let you start a detached tmux session with a Claude task, walk away, and check the results whenever you&rsquo;re ready.</p>
+
+    <!-- CONCEPT -->
+    <h2>What Is a Headless Session?</h2>
+
+    <p>A <strong>headless session</strong> is a tmux session that starts detached&mdash;it runs in the background from the moment it&rsquo;s created. You never need to be &ldquo;inside&rdquo; the session for it to work. The command <code>tmux new-session -d</code> creates a session without attaching to it.</p>
+
+    <p>Combined with Claude Code, this means you can launch an agent with a specific task, let it run independently, and check in on it (or not) at your convenience. Multiple headless sessions can run simultaneously&mdash;each one is an independent Claude agent working on its own task.</p>
+
+    <div class="callout info">
+      <p><strong>Headless vs. backgrounding:</strong> In Lesson 7 you learned to background a task <em>within</em> an existing Claude session. Headless sessions go further&mdash;they create an entirely new session with its own Claude instance. This is the difference between putting one task on hold and spinning up a separate worker.</p>
+    </div>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Detach from your current session</span>
+      <div class="step-content">
+        <p>First, leave your tutorial session so you&rsquo;re at a regular terminal:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">Ctrl+J d</div>
+        </div>
+        <p>You&rsquo;re now outside tmux. The tutorial session continues running in the background.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Launch a headless Claude agent</span>
+      <div class="step-content">
+        <p>Start a new detached session that runs Claude with a specific task:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux new-session -d -s agent "cd ~/projects/td && claude 'Add a feature to td.sh: ./td.sh search &lt;term&gt; should show only tasks containing that term. Then exit.'"</div>
+        </div>
+        <p>This creates a session called <code>agent</code>, runs <code>claude</code> inside it with the given prompt, and returns you to your terminal immediately. Claude is working in the background.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">List your sessions</span>
+      <div class="step-content">
+        <p>Verify both sessions are running:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux ls</div>
+        </div>
+        <p>You should see both <code>tutorial</code> and <code>agent</code> listed. Each is an independent session.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Peek at the agent&rsquo;s progress</span>
+      <div class="step-content">
+        <p>Attach to the agent session to see how Claude is doing:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux attach -t agent</div>
+        </div>
+        <p>You can watch Claude work in real time. When you&rsquo;ve seen enough, detach again with <code>Ctrl+J d</code>.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Return to your tutorial session</span>
+      <div class="step-content">
+        <p>Reattach to your main workspace:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux attach -t tutorial</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">6</span>
+      <span class="step-title">Test the agent&rsquo;s work</span>
+      <div class="step-content">
+        <p>Once the agent has finished (check by attaching briefly, or just wait a minute), test the new feature:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/td
+./td.sh add "Learn tmux basics"
+./td.sh add "Master Claude Code"
+./td.sh add "Build cool projects"
+./td.sh search "tmux"</div>
+        </div>
+        <p>The search command should show only the task containing &ldquo;tmux&rdquo;.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">7</span>
+      <span class="step-title">Clean up the agent session</span>
+      <div class="step-content">
+        <p>When you&rsquo;re done, kill the agent session to free resources:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux kill-session -t agent</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>You can start detached sessions with <code>tmux new-session -d</code></li>
+      <li>Multiple sessions can run simultaneously</li>
+      <li>You can check on any session by attaching to it</li>
+      <li><code>./td.sh search &lt;term&gt;</code> works</li>
+    </ul>
+
+    <!-- SCRIPTING BACKGROUND AGENTS -->
+    <h2>Scripting Background Agents</h2>
+
+    <p>This pattern becomes powerful when scripted. You can launch multiple Claude agents in parallel, each handling a different task:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">parallel-agents.sh</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>#!/bin/bash
+# Run multiple Claude agents in parallel
+
+tmux new-session -d -s tests "cd ~/project && claude 'Run the test suite and fix any failures'"
+tmux new-session -d -s docs "cd ~/project && claude 'Update README with latest API changes'"
+tmux new-session -d -s lint "cd ~/project && claude 'Fix all linting errors'"
+
+echo "Agents running. Check with: tmux ls"</pre>
+      </div>
+    </div>
+
+    <p>Each agent gets its own isolated session. You can attach to any of them to monitor progress, or just let them all finish and review the results.</p>
+
+    <div class="callout warning">
+      <p><strong>Resource awareness:</strong> Each headless Claude session uses its own process and API calls. Running many agents in parallel is powerful but consumes more resources. Start with two or three and scale up as you get comfortable with the pattern.</p>
+    </div>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="claude-10-putting-it-together.html">Lesson 10: Putting It Together</a>, you&rsquo;ll combine everything&mdash;sessions, panes, windows, backgrounding, and headless agents&mdash;into a complete development workflow and finish building the <code>td</code> CLI.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="claude-08-copy-mode.html" class="prev">Copy Mode</a>
+      <a href="claude-10-putting-it-together.html" class="next">Putting It Together</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html" class="current">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
