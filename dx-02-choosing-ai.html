@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choosing Your AI — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Developer Toolkit</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Choosing Your AI</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>2</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Developer Toolkit</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Every <code>dx</code> command needs to talk to an AI, but which one? In this lesson you&rsquo;ll build <code>lib.sh</code>&mdash;a shared library that lets any subcommand work with either Claude or Codex, selected at runtime with a simple <code>--ai</code> flag. This single file will power every command you build for the rest of the track.</p>
+
+    <!-- CONCEPT -->
+    <h2>AI Abstraction</h2>
+
+    <p>Rather than hard-coding a specific AI CLI into each subcommand, <code>lib.sh</code> provides a layer of indirection. Every command sources this file, calls <code>parse_ai_flag</code> to read the user&rsquo;s preference, and then uses one of three helper functions depending on how it needs to interact with the AI.</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Function</th>
+          <th>Mode</th>
+          <th>How It Works</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ai_prompt</code></td>
+          <td>Non-interactive</td>
+          <td>Sends a one-shot prompt, gets a response, and exits</td>
+        </tr>
+        <tr>
+          <td><code>ai_interactive</code></td>
+          <td>Interactive</td>
+          <td>Launches the AI in a tmux session and attaches you to it</td>
+        </tr>
+        <tr>
+          <td><code>ai_capture</code></td>
+          <td>Capture</td>
+          <td>Reads the AI&rsquo;s output from a tmux pane using <code>capture-pane</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The interactive and capture functions use tmux directly&mdash;creating sessions, sending keystrokes, and reading pane buffers. This is where the tmux scripting skills from the beginner tracks pay off.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Create the Shared Library</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create lib.sh</span>
+      <div class="step-content">
+        <p>This file goes in the project root alongside the <code>dx</code> script. Every subcommand will <code>source</code> it:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/lib.sh</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+# Shared functions for dx commands
+
+# Parse --ai flag from arguments
+parse_ai_flag() {
+  AI_CLI="claude"  # default
+  AI_PROMPT_FLAG="-p"
+
+  for arg in "$@"; do
+    case "$arg" in
+      --ai=claude)
+        AI_CLI="claude"
+        AI_PROMPT_FLAG="-p"
+        ;;
+      --ai=codex)
+        AI_CLI="codex"
+        AI_PROMPT_FLAG="-p"
+        ;;
+    esac
+  done
+
+  export AI_CLI AI_PROMPT_FLAG
+}
+
+# Run a prompt non-interactively
+ai_prompt() {
+  local prompt="$1"
+  $AI_CLI $AI_PROMPT_FLAG "$prompt"
+}
+
+# Run AI interactively in a tmux pane
+ai_interactive() {
+  local initial_prompt="$1"
+  local session_name="${2:-dx-ai}"
+
+  # Create or reuse session
+  if ! tmux has-session -t "$session_name" 2>/dev/null; then
+    tmux new-session -d -s "$session_name"
+  fi
+
+  # Start AI with initial prompt
+  tmux send-keys -t "$session_name" "$AI_CLI" Enter
+  sleep 2  # Wait for AI to start
+
+  if [[ -n "$initial_prompt" ]]; then
+    tmux send-keys -t "$session_name" "$initial_prompt" Enter
+  fi
+
+  # Attach to the session
+  tmux attach -t "$session_name"
+}
+
+# Capture AI response from a session
+ai_capture() {
+  local session_name="${1:-dx-ai}"
+  tmux capture-pane -t "$session_name" -p -S -100
+}</pre>
+          </div>
+        </div>
+        <p>Walk through what each function does:</p>
+        <ul>
+          <li><strong><code>parse_ai_flag</code></strong> &mdash; Loops through the arguments looking for <code>--ai=claude</code> or <code>--ai=codex</code>. Sets two exported variables: <code>AI_CLI</code> (the command name) and <code>AI_PROMPT_FLAG</code> (the flag for non-interactive prompts). Defaults to Claude.</li>
+          <li><strong><code>ai_prompt</code></strong> &mdash; Runs the selected AI CLI with a single prompt string and exits. Used by commands like <code>dx review</code> that just need a one-shot answer.</li>
+          <li><strong><code>ai_interactive</code></strong> &mdash; Creates a dedicated tmux session, launches the AI inside it, optionally sends an initial prompt, then attaches you. Used when you want a conversation.</li>
+          <li><strong><code>ai_capture</code></strong> &mdash; Uses <code>tmux capture-pane</code> to read the last 100 lines from a session. Useful for grabbing AI output programmatically after a non-interactive run.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Test the library</span>
+      <div class="step-content">
+        <p>Source the file and verify that the flag parsing works:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">source lib.sh
+parse_ai_flag --ai=codex
+echo "Using: $AI_CLI with flag: $AI_PROMPT_FLAG"</div>
+        </div>
+        <p>You should see:</p>
+        <div class="terminal-block">Using: codex with flag: -p</div>
+        <p>Now test the default (no flag):</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">parse_ai_flag
+echo "Using: $AI_CLI with flag: $AI_PROMPT_FLAG"</div>
+        </div>
+        <p>You should see <code>claude</code> as the default. Your project structure now looks like this:</p>
+        <div class="file-tree"><code>~/projects/dx/
+├── dx          # Main dispatcher script
+├── lib.sh      # Shared AI functions
+└── commands/   # Subcommand scripts go here</code></div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>lib.sh</code> provides shared functions for AI interaction</li>
+      <li>AI can be selected with <code>--ai=claude</code> or <code>--ai=codex</code></li>
+      <li>Both interactive and non-interactive modes are supported</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="dx-03-review-command.html">Lesson 3: The Review Command</a>, you&rsquo;ll build your first real subcommand&mdash;<code>dx review</code>&mdash;which pipes your staged git changes to the AI for feedback before you commit.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="dx-01-skeleton.html" class="prev">The dx Skeleton</a>
+      <a href="dx-03-review-command.html" class="next">The Review Command</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html" class="current">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
