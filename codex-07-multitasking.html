@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multitasking with Codex — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">tmux + Codex CLI</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Multitasking with Codex</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>7</strong> of 10</span>
+      <span class="meta-pill"><strong>Beginner</strong></span>
+      <span class="meta-pill">Track: tmux + Codex CLI</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Codex doesn&rsquo;t need you to sit and watch while it works. With tmux, you can switch to another pane and keep working&mdash;editing files, running commands, or browsing logs&mdash;while Codex generates code in the background. This lesson also introduces Codex&rsquo;s built-in commands for managing your session.</p>
+
+    <!-- CONCEPT -->
+    <h2>Work While Codex Thinks</h2>
+
+    <p>When you give Codex a complex prompt, it can take a while to generate a full response. In a traditional terminal, you&rsquo;d be stuck watching output scroll. With tmux panes, you simply switch away and do something else.</p>
+
+    <p>The key insight: <strong>Codex keeps running in its pane regardless of which pane you&rsquo;re looking at.</strong> You can glance over at any time to check progress&mdash;when the text stops scrolling, the output is ready.</p>
+
+    <h3>Codex Built-in Commands</h3>
+
+    <p>Codex CLI has slash commands that help you manage your session without leaving the conversation:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>What It Does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>/status</code></td>
+          <td>Show current session settings and context</td>
+        </tr>
+        <tr>
+          <td><code>/compact</code></td>
+          <td>Summarize conversation history to save context window space</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <p><strong>What you&rsquo;ll build:</strong> Three new features for <code>td</code>&mdash;a <code>done</code> command to remove completed tasks, a <code>clear</code> command to wipe the list, and better error handling&mdash;all while practicing the multitasking workflow.</p>
+    </div>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Navigate to your Codex pane</span>
+      <div class="step-content">
+        <p>Make sure you&rsquo;re in window 0 with your two-pane layout. Switch to the <strong>Codex pane</strong> (right side).</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Give Codex a bigger task</span>
+      <div class="step-content">
+        <p>This prompt asks for multiple features at once&mdash;it will take Codex a moment to generate everything:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="prompt-box-dark">Refactor td.sh to include:
+1. A "done" command: ./td.sh done 2 (marks task 2 as complete by removing it)
+2. A "clear" command: ./td.sh clear (removes all tasks)
+3. Better error handling for invalid commands</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Immediately switch panes</span>
+      <div class="step-content">
+        <p>Don&rsquo;t wait for Codex to finish. As soon as you send the prompt, switch to the left pane:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">Ctrl+J &larr;</div>
+        </div>
+        <p>This is the key habit: <strong>prompt, then move.</strong> Let Codex work while you do something else.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Work while Codex generates</span>
+      <div class="step-content">
+        <p>While Codex is &ldquo;thinking&rdquo; and printing output in the right pane, you&rsquo;re free to do anything in the left pane&mdash;run <code>ls</code>, check <code>top</code>, edit files, or review git history. The panes are completely independent.</p>
+        <div class="callout info">
+          <p><strong>Tip:</strong> Glance at the right pane periodically. When the text stops scrolling, Codex is done and the new code is ready to test.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Test the new features</span>
+      <div class="step-content">
+        <p>Once Codex has finished, test the changes in the left pane:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">./td.sh list
+./td.sh done 1
+./td.sh list
+./td.sh clear</div>
+        </div>
+        <p>The <code>done</code> command should remove a task by number, and <code>clear</code> should wipe all tasks. If something doesn&rsquo;t work, switch back to Codex and describe the problem.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">6</span>
+      <span class="step-title">Try Codex built-in commands</span>
+      <div class="step-content">
+        <p>Switch back to the <strong>Codex pane</strong> (<code>Ctrl+J &rarr;</code>) and try these slash commands:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">/status
+/compact</div>
+        </div>
+        <p><code>/status</code> shows your current session settings and context. <code>/compact</code> summarizes the conversation history to free up context window space&mdash;useful after long sessions with many prompts.</p>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>You can move freely between panes while Codex is generating output</li>
+      <li>The <code>done</code> and <code>clear</code> commands work in <code>td.sh</code></li>
+      <li><code>/status</code> shows current session status</li>
+      <li><code>/compact</code> helps trim long conversations</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> When Codex produces a lot of output, you&rsquo;ll need to scroll back through it. In <a href="codex-08-copy-mode.html">Lesson 8: Copy Mode</a>, you&rsquo;ll learn tmux&rsquo;s built-in scroll and search feature for handling long output.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="codex-06-windows.html" class="prev">Windows</a>
+      <a href="codex-08-copy-mode.html" class="next">Copy Mode</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html" class="current">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
