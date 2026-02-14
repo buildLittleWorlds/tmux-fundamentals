@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Headless Codex Sessions — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">tmux + Codex CLI</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Headless Codex Sessions</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>9</strong> of 10</span>
+      <span class="meta-pill"><strong>Beginner</strong></span>
+      <span class="meta-pill">Track: tmux + Codex CLI</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Sometimes you want to fire off a Codex task and walk away&mdash;close your laptop, grab coffee, come back later. By combining tmux&rsquo;s detached sessions with Codex&rsquo;s non-interactive mode, you can run AI-powered tasks in the background without keeping a terminal open.</p>
+
+    <!-- CONCEPT -->
+    <h2>Two Modes of Headless Work</h2>
+
+    <p>There are two ways to run Codex without babysitting it:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Approach</th>
+          <th>How It Works</th>
+          <th>Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>codex exec</code></td>
+          <td>Runs a single prompt non-interactively and exits</td>
+          <td>One-shot tasks, scripting</td>
+        </tr>
+        <tr>
+          <td><code>tmux new-session -d</code></td>
+          <td>Starts a detached session running any command</td>
+          <td>Long-running tasks you want to check on later</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The real power comes from combining them: launch a detached tmux session that runs <code>codex exec</code>, and you have a background AI agent that works while you&rsquo;re away.</p>
+
+    <div class="callout info">
+      <p><strong>What you&rsquo;ll build:</strong> A <code>search</code> command for <code>td</code>&mdash;built entirely by a headless Codex agent running in a detached tmux session.</p>
+    </div>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Detach from your current session</span>
+      <div class="step-content">
+        <p>First, leave your existing session running in the background:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">Ctrl+J d</div>
+        </div>
+        <p>You&rsquo;re back at your regular shell. Your tmux session (with Codex and all your panes) is still running&mdash;you just can&rsquo;t see it.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Try <code>codex exec</code> directly</span>
+      <div class="step-content">
+        <p>The <code>exec</code> subcommand runs Codex non-interactively&mdash;it processes a single prompt and exits:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/td
+codex exec "Explain what td.sh does in one paragraph"</div>
+        </div>
+        <p>Codex prints its response and returns you to the shell. No interactive session, no follow-up&mdash;just a one-shot answer.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Launch a detached Codex agent</span>
+      <div class="step-content">
+        <p>Now combine both techniques. Start a new tmux session in the background that runs a Codex task:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux new-session -d -s agent "cd ~/projects/td && codex exec \"Add a search command to td.sh: ./td.sh search &lt;term&gt; shows only matching tasks\""</div>
+        </div>
+        <p>This creates a session named <code>agent</code> that runs detached. Codex is working in the background&mdash;you don&rsquo;t need to watch.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">List your sessions</span>
+      <div class="step-content">
+        <p>Verify both sessions are running:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux ls</div>
+        </div>
+        <p>You should see both your original session (<code>codex-lab</code>) and the new <code>agent</code> session.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Check on the agent</span>
+      <div class="step-content">
+        <p>Attach to the agent session to see how it&rsquo;s doing:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux attach -t agent</div>
+        </div>
+        <p>If Codex is still running, you&rsquo;ll see output scrolling. If it&rsquo;s finished, you&rsquo;ll see the completed output and a shell prompt.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">6</span>
+      <span class="step-title">Test the new search command</span>
+      <div class="step-content">
+        <p>Once Codex has finished, detach (<code>Ctrl+J d</code>) and test the new feature:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/td
+./td.sh add "Learn Codex CLI"
+./td.sh add "Master tmux"
+./td.sh search "Codex"</div>
+        </div>
+        <p>The <code>search</code> command should filter your task list and show only matching entries.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">7</span>
+      <span class="step-title">Clean up the agent session</span>
+      <div class="step-content">
+        <p>Once you&rsquo;ve confirmed the feature works, remove the temporary session:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux kill-session -t agent</div>
+        </div>
+        <p>Then reattach to your main session to continue working:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux attach -t codex-lab</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>codex exec "prompt"</code> runs Codex non-interactively</li>
+      <li><code>tmux new-session -d -s name</code> starts a detached session</li>
+      <li>You can check on a detached session with <code>tmux attach -t name</code></li>
+      <li>Codex can perform tasks in the background without your terminal open</li>
+      <li>The <code>search</code> command works in <code>td.sh</code></li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> You&rsquo;ve learned all the core tmux + Codex skills. In <a href="codex-10-putting-it-together.html">Lesson 10: Putting It Together</a>, you&rsquo;ll combine everything into a complete development workflow&mdash;panes, windows, detached sessions, and Codex&mdash;to build a polished final feature for <code>td</code>.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="codex-08-copy-mode.html" class="prev">Copy Mode</a>
+      <a href="codex-10-putting-it-together.html" class="next">Putting It Together</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html" class="current">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
