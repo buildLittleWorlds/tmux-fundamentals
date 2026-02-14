@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assigning Tasks — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Multi-Agent Orchestration</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Assigning Tasks</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>3</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Now that both agents are running, it&rsquo;s time to give them work. The key to a successful handoff is <strong>clear boundaries</strong> and a <strong>clean handoff artifact</strong>&mdash;a shared document that one agent writes and the other reads, so both sides agree on the contract.</p>
+
+    <!-- CONCEPT -->
+    <h2>The Handoff Pattern</h2>
+
+    <p>In a multi-agent workflow, you don&rsquo;t want agents guessing what the other is building. Instead, you create an explicit handoff:</p>
+
+    <ol>
+      <li><strong>Agent A</strong> builds its component and writes a contract document describing the interface</li>
+      <li>You verify the contract looks correct</li>
+      <li><strong>Agent B</strong> reads the contract and builds its component to match</li>
+    </ol>
+
+    <p>For the bookmark project, this means:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Builds</th>
+          <th>Handoff Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Claude</td>
+          <td>REST API in <code>api/</code></td>
+          <td>Writes <code>handoff/api-contract.md</code></td>
+        </tr>
+        <tr>
+          <td>Codex</td>
+          <td>CLI client in <code>cli/</code></td>
+          <td>Reads <code>handoff/api-contract.md</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The <code>handoff/</code> directory is neutral territory&mdash;neither agent&rsquo;s workspace, but a shared communication channel between them.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Assign the Tasks</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create the handoff folder</span>
+      <div class="step-content">
+        <p>From your control session, create the directory where the contract document will live:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">mkdir -p ~/projects/bookmarks/handoff</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Send the API task to Claude</span>
+      <div class="step-content">
+        <p>Use <code>send-keys</code> to give Claude a detailed prompt. Notice the instruction to write the handoff contract:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="prompt-box-dark">tmux send-keys -t claude-api "Create a simple REST API for bookmarks in this directory. Use Node.js with Express. Endpoints needed:
+- POST /bookmarks (create: url, title, tags[])
+- GET /bookmarks (list all, optional ?tag= filter)
+- DELETE /bookmarks/:id
+Store data in a bookmarks.json file. Keep it minimal.
+Also write ../handoff/api-contract.md with endpoint definitions, request/response JSON examples, and error formats." Enter</div>
+        </div>
+        <p>Claude will now start building the API <em>and</em> documenting the contract that Codex will need.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Wait for the contract, then send the CLI task to Codex</span>
+      <div class="step-content">
+        <p>Before sending Codex its task, confirm Claude has finished the handoff document:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Check if the contract file exists yet</span>
+ls ~/projects/bookmarks/handoff/api-contract.md</div>
+        </div>
+        <p>Once it exists, send Codex its task with an explicit instruction to read the contract first:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="prompt-box-dark">tmux send-keys -t codex-cli "Create a CLI tool called 'bm' in this directory. Use Node.js. First, read ../handoff/api-contract.md and follow that contract exactly. Commands:
+- bm add &lt;url&gt; [title] [--tags tag1,tag2]
+- bm list [--tag tagname]
+- bm delete &lt;id&gt;
+It should talk to a REST API at http://localhost:3000. Keep it minimal." Enter</div>
+        </div>
+        <div class="callout warning">
+          <p><strong>Timing matters:</strong> Don&rsquo;t send Codex its task until the contract file exists. If Codex starts before the contract is written, it will guess at the API format instead of following it&mdash;defeating the purpose of the handoff.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Watch both agents work</span>
+      <div class="step-content">
+        <p>You can monitor progress by attaching to each session temporarily:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Attach to Claude's session</span>
+tmux attach -t claude-api
+<span class="comment"># (watch progress, then detach with Ctrl+J d)</span>
+
+<span class="comment"># Attach to Codex's session</span>
+tmux attach -t codex-cli
+<span class="comment"># (watch progress, then detach with Ctrl+J d)</span></div>
+        </div>
+        <p>Each time you&rsquo;re done watching, press <code>Ctrl+J d</code> to detach back to the control session.</p>
+      </div>
+    </div>
+
+    <!-- PRO TIP -->
+    <h2>Pro Tip: Quick Session Switching</h2>
+
+    <p>Instead of detaching and reattaching, use the tmux <strong>session switcher</strong>:</p>
+
+    <div class="copy-wrapper">
+      <button class="copy-btn">Copy</button>
+      <div class="terminal-block">Ctrl+J s</div>
+    </div>
+
+    <p>This shows a list of all sessions. Use the arrow keys to highlight one and press <code>Enter</code> to jump directly into it. It&rsquo;s much faster than the detach/attach cycle.</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Steps</th>
+          <th>Best For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Detach/Attach</td>
+          <td><code>Ctrl+J d</code> then <code>tmux attach -t name</code></td>
+          <td>Scripting, when you need to be explicit</td>
+        </tr>
+        <tr>
+          <td>Session Switcher</td>
+          <td><code>Ctrl+J s</code> then arrow keys + Enter</td>
+          <td>Interactive monitoring, quick peeks</td>
+        </tr>
+        <tr>
+          <td>capture-pane</td>
+          <td><code>tmux capture-pane -t name -p | tail</code></td>
+          <td>Read-only snapshot without leaving control</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>Claude is creating files in <code>~/projects/bookmarks/api/</code> and <code>~/projects/bookmarks/handoff/api-contract.md</code></li>
+      <li>Codex is creating files in <code>~/projects/bookmarks/cli/</code> based on the handoff contract</li>
+      <li>You can switch between sessions with <code>Ctrl+J s</code></li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-04-control-dashboard.html">Lesson 4: The Control Dashboard</a>, you&rsquo;ll turn your control session into a proper monitoring layout with live tails of both agent sessions visible at a glance.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="parallel-02-launching-agents.html" class="prev">Launching the Agents</a>
+      <a href="parallel-04-control-dashboard.html" class="next">The Control Dashboard</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html" class="current">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
