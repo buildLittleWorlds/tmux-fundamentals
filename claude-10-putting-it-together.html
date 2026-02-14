@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Putting It Together — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">tmux + Claude Code</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Putting It Together</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>10</strong> of 10</span>
+      <span class="meta-pill"><strong>Beginner</strong></span>
+      <span class="meta-pill">Track: tmux + Claude Code</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">This final lesson brings everything together. You&rsquo;ll set up a complete multi-window workspace, give Claude one last round of polish requests, test every feature of the <code>td</code> CLI, and commit your finished project&mdash;using every tmux skill you&rsquo;ve learned across the previous nine lessons.</p>
+
+    <!-- CONCEPT -->
+    <h2>The Complete Workflow</h2>
+
+    <p>Over the course of this track you&rsquo;ve built up a layered set of skills:</p>
+
+    <ul>
+      <li><strong>Sessions</strong> &mdash; persistent workspaces that survive disconnects</li>
+      <li><strong>Panes</strong> &mdash; side-by-side views for the supervisor workflow</li>
+      <li><strong>Windows</strong> &mdash; separate desks for different concerns</li>
+      <li><strong>Backgrounding</strong> &mdash; keep working while Claude thinks</li>
+      <li><strong>Headless sessions</strong> &mdash; fire-and-forget agents</li>
+      <li><strong>Copy mode</strong> &mdash; scroll back, search, and copy output</li>
+    </ul>
+
+    <p>Now you&rsquo;ll use them all at once to finish the <code>td</code> tool.</p>
+
+    <!-- EXERCISE -->
+    <h2>Final Exercise: Complete the Tool</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Attach to your tutorial session</span>
+      <div class="step-content">
+        <p>If you&rsquo;re not already inside tmux, reattach:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux attach -t tutorial</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Set up your workspace</span>
+      <div class="step-content">
+        <p>Arrange two windows for the final push:</p>
+        <ul>
+          <li><strong>Window 0:</strong> Claude + testing panes (split with <code>Ctrl+J %</code>)</li>
+          <li><strong>Window 1:</strong> Git operations (create with <code>Ctrl+J c</code>)</li>
+        </ul>
+        <p>Navigate to window 0 (<code>Ctrl+J 0</code>) and make sure Claude Code is running in the right pane.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Request final polish from Claude</span>
+      <div class="step-content">
+        <p>In the <strong>Claude pane</strong> (right), ask for a final round of improvements:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="prompt-box-dark">Review td.sh and make these improvements:
+1. Add color output (green for success, red for errors)
+2. Show task count in the list header
+3. Add --version flag that shows "td v1.0"
+Make sure all existing features still work.</div>
+        </div>
+        <p>Watch Claude work, or background the task with <code>Ctrl+J</code> and check back with <code>/status</code>.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Test thoroughly</span>
+      <div class="step-content">
+        <p>Switch to the <strong>left pane</strong> (<code>Ctrl+J &larr;</code>) and run through every feature:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">./td.sh --version
+./td.sh --help
+./td.sh clear
+./td.sh add "First task"
+./td.sh add "Second task"
+./td.sh add "Third task"
+./td.sh list
+./td.sh done 2
+./td.sh list
+./td.sh search "First"
+./td.sh clear</div>
+        </div>
+        <p>If anything fails, switch back to Claude and describe the problem. This is the supervisor workflow in action&mdash;prompt, test, fix, repeat.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Commit your work in the git window</span>
+      <div class="step-content">
+        <p>Switch to window 1:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">Ctrl+J 1</div>
+        </div>
+        <p>Then commit the finished project:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cd ~/projects/td
+git add -A
+git commit -m "Complete td CLI tool"</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">6</span>
+      <span class="step-title">(Optional) Install td globally</span>
+      <div class="step-content">
+        <p>Make <code>td</code> available from any directory:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">sudo cp td.sh /usr/local/bin/td
+<span class="comment"># Now you can run "td" from anywhere</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <p>Your <code>td</code> tool should support all of these commands:</p>
+
+    <ul class="checklist">
+      <li><code>td --help</code> &mdash; show usage</li>
+      <li><code>td --version</code> &mdash; show version</li>
+      <li><code>td add "task"</code> &mdash; add a task</li>
+      <li><code>td list</code> &mdash; show all tasks with count</li>
+      <li><code>td done &lt;n&gt;</code> &mdash; remove task by number</li>
+      <li><code>td search &lt;term&gt;</code> &mdash; find matching tasks</li>
+      <li><code>td clear</code> &mdash; remove all tasks</li>
+    </ul>
+
+    <!-- QUICK REFERENCE CARD -->
+    <h2>tmux Quick Reference Card</h2>
+
+    <p>Here&rsquo;s a consolidated reference of every tmux command you&rsquo;ve learned across this track.</p>
+
+    <h3>Session Management</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tmux new -s name</code></td>
+          <td>New named session</td>
+        </tr>
+        <tr>
+          <td><code>tmux attach -t name</code></td>
+          <td>Attach to session</td>
+        </tr>
+        <tr>
+          <td><code>tmux ls</code></td>
+          <td>List sessions</td>
+        </tr>
+        <tr>
+          <td><code>tmux kill-session -t name</code></td>
+          <td>Kill session</td>
+        </tr>
+        <tr>
+          <td><code>tmux new-session -d -s name "cmd"</code></td>
+          <td>Start headless session</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J d</code></td>
+          <td>Detach from session</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Panes</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J %</code></td>
+          <td>Split vertically (left/right)</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J "</code></td>
+          <td>Split horizontally (top/bottom)</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J &uarr;&darr;&larr;&rarr;</code></td>
+          <td>Move between panes</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J x</code></td>
+          <td>Close current pane</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J z</code></td>
+          <td>Zoom pane (toggle fullscreen)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Windows</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J c</code></td>
+          <td>New window</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J n / p</code></td>
+          <td>Next / previous window</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J 0&ndash;9</code></td>
+          <td>Jump to window by number</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J ,</code></td>
+          <td>Rename window</td>
+        </tr>
+        <tr>
+          <td><code>Ctrl+J &amp;</code></td>
+          <td>Close window</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Copy Mode</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J [</code></td>
+          <td>Enter copy mode</td>
+        </tr>
+        <tr>
+          <td><code>&uarr; / &darr; / PgUp / PgDn</code></td>
+          <td>Navigate</td>
+        </tr>
+        <tr>
+          <td><code>/ pattern</code></td>
+          <td>Search forward</td>
+        </tr>
+        <tr>
+          <td><code>? pattern</code></td>
+          <td>Search backward</td>
+        </tr>
+        <tr>
+          <td><code>n / N</code></td>
+          <td>Next / previous match</td>
+        </tr>
+        <tr>
+          <td><code>q</code></td>
+          <td>Exit copy mode</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Claude Code in tmux</h3>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Ctrl+J</code> (alone)</td>
+          <td>Background current task</td>
+        </tr>
+        <tr>
+          <td><code>/status</code></td>
+          <td>Check background task</td>
+        </tr>
+        <tr>
+          <td><code>/resume</code></td>
+          <td>Resume background task</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>Congratulations!</strong> You&rsquo;ve completed the tmux + Claude Code track. You can now create and manage sessions, split your screen into panes, use multiple windows, supervise Claude Code while testing, run headless background agents, and navigate output history. You&rsquo;ve also built a working CLI tool&mdash;the <code>td</code> task manager is genuinely useful, so feel free to keep improving it.</p>
+      <p>Ready for more? Check the <a href="index.html">track overview</a> for advanced tutorials on multi-agent orchestration and developer toolkit automation.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="claude-09-headless-sessions.html" class="prev">Headless Sessions</a>
+      <span></span>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html" class="current">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
