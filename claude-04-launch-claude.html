@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Launch Claude Code — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">tmux + Claude Code</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Launch Claude Code</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>4</strong> of 10</span>
+      <span class="meta-pill"><strong>Beginner</strong></span>
+      <span class="meta-pill">Track: tmux + Claude Code</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Now you&rsquo;ll combine what you&rsquo;ve learned&mdash;sessions, panes, and navigation&mdash;into a real workflow. You&rsquo;ll start Claude Code in one pane, give it a task, and verify the results in the other pane. This is the first taste of the supervisor pattern you&rsquo;ll use for the rest of the track.</p>
+
+    <!-- CONCEPT -->
+    <h2>Claude Code in a Pane</h2>
+
+    <p>Claude Code is a CLI tool that generates and edits code from natural-language prompts. Running it inside a tmux pane means you can watch its output in real time while keeping a separate shell available for testing, browsing files, and running git commands.</p>
+
+    <p>In this lesson you&rsquo;ll create a small project&mdash;a bash todo CLI called <code>td</code>&mdash;and use Claude Code to generate the initial scaffolding.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Start with a single pane</span>
+      <div class="step-content">
+        <p>If you still have multiple panes open from Lesson 3, close the extras with <code>exit</code> until you&rsquo;re down to one pane.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Create a project directory</span>
+      <div class="step-content">
+        <p>Set up a workspace for the <code>td</code> tool:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">mkdir -p ~/projects/td && cd ~/projects/td</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Split into two panes</span>
+      <div class="step-content">
+        <p>Split vertically so you have a left pane and a right pane:</p>
+        <p><code>Ctrl+J %</code></p>
+        <p>Your cursor lands in the right pane.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Launch Claude Code in the right pane</span>
+      <div class="step-content">
+        <p>Start Claude Code:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">claude</div>
+        </div>
+        <p>Wait for the Claude Code prompt to appear. The right pane is now your AI workspace.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Give Claude its first task</span>
+      <div class="step-content">
+        <p>Type the following prompt into Claude Code:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="prompt-box-dark">Create a simple CLI todo app called "td" in a single file called td.sh.
+For now, just make it show help text when run with --help or no arguments.
+Keep it minimal - just bash, no dependencies.</div>
+        </div>
+        <p>Watch as Claude generates the file. You can see every line it writes in real time.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">6</span>
+      <span class="step-title">Test in the left pane</span>
+      <div class="step-content">
+        <p>Move to the left pane (<code>Ctrl+J &larr;</code>) and verify what Claude created:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x td.sh
+./td.sh --help</div>
+        </div>
+        <p>You should see usage information printed to the terminal.</p>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>Claude Code is running in the right pane</li>
+      <li>A file <code>td.sh</code> exists in your project directory</li>
+      <li>Running <code>./td.sh --help</code> shows usage information</li>
+    </ul>
+
+    <!-- THE SUPERVISOR PATTERN -->
+    <h2>The Supervisor Pattern</h2>
+
+    <p>Notice what just happened: Claude worked in one pane while you verified the results in another. You could watch Claude&rsquo;s progress in real time and test immediately without switching windows or waiting. This is the <strong>supervisor workflow</strong>&mdash;you&rsquo;ll use it constantly throughout this track.</p>
+
+    <div class="callout info">
+      <p><strong>Left pane = you, right pane = Claude.</strong> This convention keeps things predictable. You always know where to look for Claude&rsquo;s output and where to run your own commands. In the next lesson, you&rsquo;ll formalize this pattern and start iterating on the <code>td</code> tool with rapid prompt&ndash;test cycles.</p>
+    </div>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="claude-05-supervisor-workflow.html">Lesson 5: The Supervisor Workflow</a>, you&rsquo;ll use this two-pane setup to build features iteratively&mdash;prompting Claude for code, testing it, and requesting changes in rapid cycles.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="claude-03-split-panes.html" class="prev">Split Panes</a>
+      <a href="claude-05-supervisor-workflow.html" class="next">Supervisor Workflow</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html" class="current">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
