@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Session Architecture — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Multi-Agent Orchestration</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Multi-Session Architecture</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>1</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">In this lesson, you&rsquo;ll learn how to run multiple tmux sessions simultaneously&mdash;the foundation for orchestrating AI agent handoffs. Instead of working in a single session, you&rsquo;ll create a three-session architecture where each agent gets its own workspace while you coordinate from a central control session.</p>
+
+    <!-- WHAT YOU'LL BUILD -->
+    <div class="callout info">
+      <p><strong>What you&rsquo;ll build in this track:</strong> A simple <strong>bookmark API</strong> with two components built through a handoff&mdash;Claude builds the backend REST API (Node.js/Express) and writes the API contract, then Codex builds the CLI client from that contract. You&rsquo;ll orchestrate both from a control session, learning advanced tmux coordination patterns along the way.</p>
+    </div>
+
+    <!-- CONCEPT -->
+    <h2>The Multi-Session Model</h2>
+
+    <p>Until now, you&rsquo;ve worked in a single tmux session. But tmux can run <strong>multiple independent sessions</strong> simultaneously. This is perfect for staged handoffs between agents.</p>
+
+    <p>The architecture uses three sessions, each with a distinct role:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Session</th>
+          <th>Purpose</th>
+          <th>Working Directory</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>control</code></td>
+          <td>Your command center&mdash;monitoring and integration testing</td>
+          <td><code>~/projects/bookmarks</code></td>
+        </tr>
+        <tr>
+          <td><code>claude-api</code></td>
+          <td>Claude Code builds the backend REST API</td>
+          <td><code>~/projects/bookmarks/api</code></td>
+        </tr>
+        <tr>
+          <td><code>codex-cli</code></td>
+          <td>Codex CLI builds the CLI client</td>
+          <td><code>~/projects/bookmarks/cli</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Here&rsquo;s how it looks in practice:</p>
+
+    <div class="file-tree"><code>┌─────────────────────────────────────────────────────────┐
+│  Terminal                                               │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │ Session: control                                 │   │
+│  │ ┌─────────────────┬─────────────────────────┐   │   │
+│  │ │ Agent Status    │ Integration Testing     │   │   │
+│  │ └─────────────────┴─────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────┘   │
+│                                                         │
+│  (Background)                                           │
+│  ┌──────────────────────┐  ┌──────────────────────┐    │
+│  │ Session: claude-api  │  │ Session: codex-cli  │    │
+│  │ Claude + API server  │  │ Codex + CLI dev     │    │
+│  └──────────────────────┘  └──────────────────────┘    │
+└─────────────────────────────────────────────────────────┘</code></div>
+
+    <p>The key insight: agent sessions run <strong>detached</strong> in the background. You stay in the control session and send commands to them remotely&mdash;no need to switch back and forth manually.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Create the Three-Session Layout</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create the project directory</span>
+      <div class="step-content">
+        <p>Set up the project structure with separate directories for the API and CLI components:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">mkdir -p ~/projects/bookmarks && cd ~/projects/bookmarks
+mkdir api cli</div>
+        </div>
+        <p>The <code>api/</code> directory is where Claude will work, and <code>cli/</code> is where Codex will work. Keeping them separate prevents file conflicts.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Create three separate tmux sessions</span>
+      <div class="step-content">
+        <p>Launch the two agent sessions as <strong>detached</strong> background sessions, then create the control session (which you&rsquo;ll attach to):</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Session for Claude (backend API)</span>
+tmux new-session -d -s claude-api -c ~/projects/bookmarks/api
+
+<span class="comment"># Session for Codex (CLI client)</span>
+tmux new-session -d -s codex-cli -c ~/projects/bookmarks/cli
+
+<span class="comment"># Control session (where you'll work)</span>
+tmux new-session -s control -c ~/projects/bookmarks</div>
+        </div>
+        <p>The <code>-d</code> flag creates a detached session. The <code>-s</code> flag names it. The <code>-c</code> flag sets the starting directory. The final command (without <code>-d</code>) creates and <em>attaches</em> to the control session.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Verify all sessions are running</span>
+      <div class="step-content">
+        <p>From inside the control session, list everything tmux is managing:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux ls</div>
+        </div>
+        <p>You should see output like this:</p>
+        <div class="terminal-block">claude-api: 1 windows (created ...)
+control: 1 windows (created ...) (attached)
+codex-cli: 1 windows (created ...)</div>
+        <p>The <code>(attached)</code> label confirms you&rsquo;re inside the control session. The other two are running in the background, ready for agents.</p>
+      </div>
+    </div>
+
+    <!-- KEY FLAGS REFERENCE -->
+    <h2>Key Flags Reference</h2>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Flag</th>
+          <th>Meaning</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>-d</code></td>
+          <td>Create session detached (in the background)</td>
+          <td><code>tmux new-session -d -s name</code></td>
+        </tr>
+        <tr>
+          <td><code>-s</code></td>
+          <td>Name the session</td>
+          <td><code>tmux new-session -s control</code></td>
+        </tr>
+        <tr>
+          <td><code>-c</code></td>
+          <td>Set the working directory</td>
+          <td><code>tmux new-session -c ~/path</code></td>
+        </tr>
+        <tr>
+          <td><code>-t</code></td>
+          <td>Target a specific session</td>
+          <td><code>tmux attach -t control</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>tmux ls</code> shows three sessions: <code>claude-api</code>, <code>control</code>, and <code>codex-cli</code></li>
+      <li>You are attached to the <code>control</code> session</li>
+      <li>The <code>api/</code> and <code>cli/</code> directories exist inside <code>~/projects/bookmarks/</code></li>
+      <li>Each session started in its correct working directory</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-02-launching-agents.html">Lesson 2: Launching the Agents</a>, you&rsquo;ll start Claude and Codex in their respective sessions without ever leaving the control session&mdash;using <code>tmux send-keys</code> to run commands remotely.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="setup.html" class="prev">Setup &amp; Configuration</a>
+      <a href="parallel-02-launching-agents.html" class="next">Launching the Agents</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html" class="current">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
