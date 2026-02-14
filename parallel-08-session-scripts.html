@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Scripts — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Multi-Agent Orchestration</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Session Scripts</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>8</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Over the past seven lessons you&rsquo;ve been typing the same setup commands every time: create sessions, launch agents, split panes, arrange the dashboard. It&rsquo;s time to capture all of that into a single launcher script so your entire multi-agent environment spins up with one command.</p>
+
+    <!-- CONCEPT -->
+    <h2>Why Script Your Sessions</h2>
+
+    <p>Every tmux command you&rsquo;ve used&mdash;<code>new-session</code>, <code>send-keys</code>, <code>split-window</code>&mdash;is just a shell command. That means your entire multi-agent setup is scriptable. A launcher script gives you:</p>
+
+    <ul>
+      <li><strong>Reproducibility</strong> &mdash; the same environment every time, no forgotten steps</li>
+      <li><strong>Speed</strong> &mdash; one command instead of a dozen</li>
+      <li><strong>Shareability</strong> &mdash; teammates can use the same script to get the same layout</li>
+    </ul>
+
+    <div class="callout info">
+      <p><strong>This is the tmux power pattern.</strong> Experienced tmux users almost always have launcher scripts for their projects. What you&rsquo;re building here is a standard practice&mdash;just applied to AI agent orchestration.</p>
+    </div>
+
+    <!-- EXERCISE: CREATE THE LAUNCHER -->
+    <h2>Exercise: Create the Launcher Script</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Write the script</span>
+      <div class="step-content">
+        <p>Create a bash script that sets up the full multi-agent environment:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/bookmarks/start-agents.sh</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+PROJECT_DIR=~/projects/bookmarks
+
+# Kill existing sessions if they exist
+tmux kill-session -t claude-api 2&gt;/dev/null
+tmux kill-session -t codex-cli 2&gt;/dev/null
+tmux kill-session -t control 2&gt;/dev/null
+
+# Create sessions
+tmux new-session -d -s claude-api -c "$PROJECT_DIR/api"
+tmux new-session -d -s codex-cli -c "$PROJECT_DIR/cli"
+tmux new-session -d -s control -c "$PROJECT_DIR"
+mkdir -p "$PROJECT_DIR/handoff"
+
+# Start the AI agents
+tmux send-keys -t claude-api 'claude' Enter
+tmux send-keys -t codex-cli 'codex --no-alt-screen' Enter
+
+# Set up control session layout
+tmux send-keys -t control 'tmux split-window -v -p 30' Enter
+tmux send-keys -t control 'tmux select-pane -t 0' Enter
+tmux send-keys -t control 'tmux split-window -h' Enter
+
+# Attach to control
+tmux attach -t control</pre>
+          </div>
+        </div>
+        <p>Then make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x ~/projects/bookmarks/start-agents.sh</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>What the script does</h3>
+
+    <p>Walking through the script section by section:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Section</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>kill-session</code> lines</td>
+          <td>Clean up any leftover sessions from a previous run. The <code>2&gt;/dev/null</code> suppresses errors if the session doesn&rsquo;t exist.</td>
+        </tr>
+        <tr>
+          <td><code>new-session</code> lines</td>
+          <td>Create three detached sessions, each with its own working directory (<code>-c</code>).</td>
+        </tr>
+        <tr>
+          <td><code>send-keys</code> for agents</td>
+          <td>Launch Claude and Codex inside their respective sessions.</td>
+        </tr>
+        <tr>
+          <td><code>send-keys</code> for layout</td>
+          <td>Set up the control session&rsquo;s dashboard layout (split panes from Lesson 4).</td>
+        </tr>
+        <tr>
+          <td><code>tmux attach</code></td>
+          <td>Drop you into the control session, ready to orchestrate.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- EXERCISE: TEST THE SCRIPT -->
+    <h2>Exercise: Test the Script</h2>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Kill existing sessions and run the launcher</span>
+      <div class="step-content">
+        <p>Start from a clean slate and test the script end to end:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Kill all tmux sessions</span>
+tmux kill-server
+
+<span class="comment"># Run the launcher</span>
+~/projects/bookmarks/start-agents.sh</div>
+        </div>
+        <p>You should land in the control session with the dashboard layout already arranged. Both agent sessions should be running in the background with Claude and Codex started.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Verify everything is running</span>
+      <div class="step-content">
+        <p>Confirm all three sessions are active and the agents are responding:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># List all sessions</span>
+tmux ls
+
+<span class="comment"># Quick peek at each agent</span>
+tmux capture-pane -t claude-api -p | tail -5
+tmux capture-pane -t codex-cli -p | tail -5</div>
+        </div>
+        <p>You should see three sessions listed and recent output from both agents confirming they&rsquo;re ready for input.</p>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <p><strong>Note:</strong> <code>tmux kill-server</code> destroys <em>all</em> tmux sessions, not just the ones from this project. If you have other tmux work running, use the individual <code>kill-session</code> commands from the script instead.</p>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>One command sets up your entire multi-agent environment</li>
+      <li>Sessions are created with the correct working directories</li>
+      <li>AI agents start automatically in their respective sessions</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-09-capture-review.html">Lesson 9: Capture and Review</a>, you&rsquo;ll learn how to save full session histories to log files and build a summary script that reports on both agents&rsquo; work.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="parallel-07-conflict-resolution.html" class="prev">Conflict Resolution</a>
+      <a href="parallel-09-capture-review.html" class="next">Capture &amp; Review</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html" class="current">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
