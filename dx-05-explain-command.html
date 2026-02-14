@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Explain Command — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Developer Toolkit</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">The Explain Command</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>5</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Developer Toolkit</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead"><code>dx explain</code> is your first <em>interactive</em> subcommand. Instead of printing a response and exiting, it opens an AI conversation in a dedicated tmux session with the target file pre-loaded&mdash;so you can ask follow-up questions, drill into specific functions, and keep the session alive for later.</p>
+
+    <!-- CONCEPT -->
+    <h2>Interactive tmux Sessions</h2>
+
+    <p>The review and PR commands were non-interactive: run AI, get output, done. But some tasks work better as conversations. <code>dx explain</code> creates a dedicated tmux session, launches the AI inside it, sends an initial prompt with the file contents, and then <em>attaches</em> you to the session.</p>
+
+    <p>The command accepts three input formats, each producing a different prompt:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Input Format</th>
+          <th>Example</th>
+          <th>What Happens</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>File path</td>
+          <td><code>dx explain src/auth.js</code></td>
+          <td>Loads the entire file as context</td>
+        </tr>
+        <tr>
+          <td>File:lines</td>
+          <td><code>dx explain src/auth.js:42-60</code></td>
+          <td>Extracts only the specified line range</td>
+        </tr>
+        <tr>
+          <td>Search term</td>
+          <td><code>dx explain &quot;handleLogin&quot;</code></td>
+          <td>Greps the codebase and explains all matches</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Because the session persists after you detach, you can come back to the conversation hours later with <code>tmux attach -t dx-explain</code>&mdash;the full context is still there.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise: Build the Explain Command</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create the explain command</span>
+      <div class="step-content">
+        <p>This is the longest subcommand so far. It handles three input formats, builds a tailored prompt for each, and manages a tmux session:</p>
+        <div class="skill-file">
+          <div class="skill-file-header">~/projects/dx/commands/explain</div>
+          <div class="copy-wrapper">
+            <button class="copy-btn">Copy</button>
+            <pre>#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+parse_ai_flag "$@"
+
+# Remove --ai flag from arguments
+ARGS=()
+for arg in "$@"; do
+  case "$arg" in
+    --ai=*) ;;
+    *) ARGS+=("$arg") ;;
+  esac
+done
+
+TARGET="${ARGS[0]}"
+
+if [[ -z "$TARGET" ]]; then
+  echo "Usage: dx explain &lt;file&gt; [--ai=claude|codex]"
+  echo ""
+  echo "Examples:"
+  echo "  dx explain src/auth.js"
+  echo "  dx explain src/auth.js:42-60"
+  echo "  dx explain 'function handleLogin'"
+  exit 1
+fi
+
+# Check if it's a file
+if [[ -f "$TARGET" ]]; then
+  CONTENT=$(cat "$TARGET")
+  PROMPT="Explain this code. Start with a high-level overview, then explain key parts:
+
+File: $TARGET
+
+\`\`\`
+$CONTENT
+\`\`\`
+
+I may ask follow-up questions."
+
+# Check if it's file:lines format
+elif [[ "$TARGET" =~ ^(.+):([0-9]+)-([0-9]+)$ ]]; then
+  FILE="${BASH_REMATCH[1]}"
+  START="${BASH_REMATCH[2]}"
+  END="${BASH_REMATCH[3]}"
+  CONTENT=$(sed -n "${START},${END}p" "$FILE")
+  PROMPT="Explain this code section (lines $START-$END of $FILE):
+
+\`\`\`
+$CONTENT
+\`\`\`
+
+I may ask follow-up questions."
+
+# Treat as a search term
+else
+  echo "Searching for: $TARGET"
+  MATCHES=$(grep -rn "$TARGET" . --include="*.js" --include="*.ts" --include="*.py" --include="*.go" --include="*.rs" 2&gt;/dev/null | head -20)
+
+  if [[ -z "$MATCHES" ]]; then
+    echo "No matches found for: $TARGET"
+    exit 1
+  fi
+
+  PROMPT="Explain this code pattern. These are all the places '$TARGET' appears in the codebase:
+
+\`\`\`
+$MATCHES
+\`\`\`
+
+Explain what this pattern does and how it's used across the codebase."
+fi
+
+# Launch interactive session
+SESSION_NAME="dx-explain"
+
+# Kill existing session if any
+tmux kill-session -t "$SESSION_NAME" 2&gt;/dev/null || true
+
+# Create new session and start AI
+tmux new-session -d -s "$SESSION_NAME"
+tmux send-keys -t "$SESSION_NAME" "$AI_CLI" Enter
+
+# Wait for AI to initialize
+echo "Starting $AI_CLI..."
+sleep 3
+
+# Send the explain prompt
+tmux send-keys -t "$SESSION_NAME" "$PROMPT" Enter
+
+# Attach to the session
+echo "Attaching to interactive session (Ctrl+J d to detach)..."
+tmux attach -t "$SESSION_NAME"</pre>
+          </div>
+        </div>
+        <p>Make it executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x commands/explain</div>
+        </div>
+        <p>Key details:</p>
+        <ul>
+          <li><strong>Argument stripping</strong> &mdash; The <code>ARGS</code> array filters out <code>--ai=*</code> flags so the target file path is clean.</li>
+          <li><strong>Three-branch input handling</strong> &mdash; A file path loads the whole file, <code>file:start-end</code> uses <code>sed</code> to extract a line range, and anything else is treated as a <code>grep</code> search term.</li>
+          <li><strong>Session management</strong> &mdash; Kills any existing <code>dx-explain</code> session first so you get a fresh start, then creates a new detached session and launches the AI inside it.</li>
+          <li><strong><code>sleep 3</code></strong> &mdash; Gives the AI CLI time to initialize before sending the prompt. Without this, the prompt can arrive before the AI is ready.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Test with a file</span>
+      <div class="step-content">
+        <p>Point it at the <code>lib.sh</code> you built in Lesson 2:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">./dx explain lib.sh</div>
+        </div>
+        <p>You&rsquo;ll see <code>Starting claude...</code> followed by the AI session attaching. The AI will explain the file and then wait for your follow-up questions.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Ask follow-up questions, then detach</span>
+      <div class="step-content">
+        <p>While in the session, try asking a follow-up like &ldquo;What would happen if I added a third AI option?&rdquo; When you&rsquo;re done, detach with:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">Ctrl+J d</div>
+        </div>
+        <p>You&rsquo;re back in your original terminal, but the AI session is still running in the background.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Reattach to the session</span>
+      <div class="step-content">
+        <p>The session persists. Come back to it anytime:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux attach -t dx-explain</div>
+        </div>
+        <p>Your entire conversation history is still there&mdash;the AI remembers the context. This is the power of tmux-managed sessions: your AI interactions don&rsquo;t have to be disposable.</p>
+        <p>Your project structure now looks like this:</p>
+        <div class="file-tree"><code>~/projects/dx/
+├── dx              # Main dispatcher script
+├── lib.sh          # Shared AI functions
+└── commands/
+    ├── review      # AI-powered code review
+    ├── pr          # AI-generated pull requests
+    └── explain     # Interactive code explainer</code></div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li><code>dx explain &lt;file&gt;</code> opens an interactive AI session with the file pre-loaded</li>
+      <li>File content is sent as the initial prompt context</li>
+      <li>The session persists after detaching for follow-up questions later</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="dx-06-test-command.html">Lesson 6: The Test Command</a>, you&rsquo;ll build <code>dx test</code>&mdash;a command that runs your test suite, detects failures, and automatically sends them to the AI for analysis in a split-pane layout.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="dx-04-pr-command.html" class="prev">The PR Command</a>
+      <a href="dx-06-test-command.html" class="next">The Test Command</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html" class="current">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
