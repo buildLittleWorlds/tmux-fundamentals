@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synchronized Commands — tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Multi-Agent Orchestration</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Synchronized Commands</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>6</strong> of 10</span>
+      <span class="meta-pill"><strong>Advanced</strong></span>
+      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">So far you&rsquo;ve been sending commands to one agent at a time. But when you need a status check or want both agents to act in concert, you can broadcast the same command to every session at once. This lesson covers synchronized commands, side-by-side comparison windows, and the pitfall of nested tmux sessions.</p>
+
+    <!-- CONCEPT -->
+    <h2>Broadcasting to Multiple Sessions</h2>
+
+    <p>With <code>tmux send-keys</code> targeting individual sessions, you&rsquo;ve been sending instructions one at a time. But a simple shell loop lets you send the <strong>same command to every agent session simultaneously</strong>. This is invaluable for synchronized status checks, coordinated restarts, or asking both agents to summarize their progress at the same moment.</p>
+
+    <div class="callout info">
+      <p><strong>Why not nested sessions?</strong> Your first instinct might be to open a window that attaches to another tmux session. This creates <em>nested tmux sessions</em>&mdash;sessions inside sessions&mdash;which leads to confusing key conflicts (your prefix key gets intercepted by the outer session). The patterns in this lesson avoid nesting entirely.</p>
+    </div>
+
+    <!-- EXERCISE 1: THE NESTED-SESSION TRAP -->
+    <h2>Exercise: Avoid the Nested-Session Trap</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">See why nesting is problematic</span>
+      <div class="step-content">
+        <p>You might try creating a window that attaches to both agent sessions side by side:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux new-window -n agents
+tmux send-keys 'tmux attach -t claude-api' Enter
+tmux split-window -h
+tmux send-keys 'tmux attach -t codex-cli' Enter</div>
+        </div>
+        <p>This <em>works</em>, but now you have tmux inside tmux. Your <code>Ctrl+J</code> prefix is captured by the outer session, so you can&rsquo;t control the inner ones without double-pressing the prefix. It gets confusing fast.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Use a comparison window instead</span>
+      <div class="step-content">
+        <p>Go back to your control session&rsquo;s first window, then create a clean comparison layout:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Return to the control session's first window</span>
+tmux select-window -t control:0
+
+<span class="comment"># Create a side-by-side comparison window</span>
+tmux new-window -n compare
+tmux split-window -h</div>
+        </div>
+        <p>Now you have two panes in the control session&mdash;no nesting. You&rsquo;ll use <code>send-keys</code> from here to talk to the agent sessions remotely.</p>
+      </div>
+    </div>
+
+    <!-- EXERCISE 2: SYNCHRONIZED STATUS CHECK -->
+    <h2>Exercise: Synchronized Status Check</h2>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Send the same command to both agents</span>
+      <div class="step-content">
+        <p>Use a <code>for</code> loop to broadcast a status request to every agent session at once:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block"><span class="comment"># Send to both agents simultaneously</span>
+for session in claude-api codex-cli; do
+  tmux send-keys -t $session "Summarize current status in 3 bullets and list changed files." Enter
+done</div>
+        </div>
+        <p>Both agents receive the same prompt at the same time. While they respond, you can continue working in your control panes.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Capture and compare the outputs</span>
+      <div class="step-content">
+        <p>After the agents have had time to respond, capture their output side by side:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">echo "=== Claude ===" &amp;&amp; tmux capture-pane -t claude-api -p | tail -10
+echo "=== Codex ===" &amp;&amp; tmux capture-pane -t codex-cli -p | tail -10</div>
+        </div>
+        <p>This gives you a quick snapshot of where each agent stands. You can compare progress, spot mismatches in their understanding, or confirm they&rsquo;re both on track.</p>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <p><strong>Timing matters:</strong> The agents won&rsquo;t respond instantly. Give them a few seconds (or longer for complex prompts) before capturing output. If the response is still streaming, you&rsquo;ll see a partial result&mdash;just wait and capture again.</p>
+    </div>
+
+    <!-- EXTENDING THE PATTERN -->
+    <h2>Extending the Pattern</h2>
+
+    <p>The <code>for</code> loop approach scales to any number of sessions. As you add more agents to your workflow, the same broadcast pattern works:</p>
+
+    <div class="copy-wrapper">
+      <button class="copy-btn">Copy</button>
+      <div class="terminal-block"><span class="comment"># Broadcast to three agents</span>
+for session in claude-api codex-cli testing-agent; do
+  tmux send-keys -t $session "Run your test suite and report results." Enter
+done</div>
+    </div>
+
+    <p>You can also vary the command per session while keeping the synchronized timing:</p>
+
+    <div class="copy-wrapper">
+      <button class="copy-btn">Copy</button>
+      <div class="terminal-block"><span class="comment"># Capture all agents into separate log files</span>
+for session in claude-api codex-cli; do
+  tmux capture-pane -t $session -p -S -1000 &gt; ~/projects/bookmarks/${session}-snapshot.log
+done</div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>You understand why nested tmux sessions cause problems and how to avoid them</li>
+      <li>You can send the same command to multiple sessions using a <code>for</code> loop</li>
+      <li>You can capture and compare outputs from both agents side by side</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-07-conflict-resolution.html">Lesson 7: Conflict Resolution</a>, you&rsquo;ll tackle what happens when both agents need to modify the same shared files&mdash;and learn how to establish ownership boundaries to prevent collisions.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="parallel-05-integration-point.html" class="prev">Integration Point</a>
+      <a href="parallel-07-conflict-resolution.html" class="next">Conflict Resolution</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html" class="current">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>
