@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Compiler as Guardrail &mdash; tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Guardrails for Speed</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">The Compiler as Guardrail</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>3</strong> of 10</span>
+      <span class="meta-pill"><strong>Intermediate</strong></span>
+      <span class="meta-pill">Track: Guardrails for Speed</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">A compiler is a free guardrail. It runs automatically, catches entire classes of bugs, and never forgets a rule. You do not need to configure it, remind it, or hope it pays attention&mdash;it is deterministic and exhaustive. When an AI agent generates imperfect code, the compiler is your first line of defense: a safety net that exists before any test suite, any code review, or any human eye touches the output.</p>
+
+    <!-- CONCEPT: WHY TYPES MATTER MORE WITH AI -->
+    <h2>Why Types Matter More with AI</h2>
+
+    <p>When you write code yourself, you carry context in your head. You know that the first argument is the document name and the second is the blob URI because you just wrote the function five minutes ago. But when AI writes code, it does not have that implicit memory. Mistakes like swapping two string arguments are invisible in untyped code&mdash;everything is a string, so everything type-checks, and the bug sails silently into production.</p>
+
+    <p>This makes the choice of language tooling a guardrail decision. The stronger your type system, the more mistakes the compiler catches before any code runs:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Examples</th>
+          <th>Compiler catches argument swap?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Compiled + typed</strong></td>
+          <td>TypeScript, Rust, Go, Java</td>
+          <td>Yes&mdash;if you use distinct types (not just <code>string</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Interpreted + typed</strong></td>
+          <td>Python with mypy, PHP with strict types</td>
+          <td>Yes&mdash;at lint time, if you run the checker</td>
+        </tr>
+        <tr>
+          <td><strong>Untyped</strong></td>
+          <td>Vanilla JavaScript, Ruby</td>
+          <td>No&mdash;both arguments are strings, swap is invisible</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Consider a function signature like this:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">The argument-swapping problem</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>function upload(name: string, uri: string, overwrite: boolean): void</pre>
+      </div>
+    </div>
+
+    <p>If an AI agent calls <code>upload(uri, name, true)</code> instead of <code>upload(name, uri, true)</code>, the compiler shrugs&mdash;both are strings. The code compiles, the tests might even pass if the test data happens to be symmetric, and the bug ships. But if you use record types, the compiler catches it instantly.</p>
+
+    <!-- RECORD TYPES: LIGHTWEIGHT SAFETY -->
+    <h2>Record Types: Lightweight Safety</h2>
+
+    <p>The fix is surprisingly simple: wrap your primitive types in distinct, named types. In TypeScript, you can use branded types (sometimes called &ldquo;opaque types&rdquo;) to make two strings incompatible at the type level:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">Plain strings: no protection</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>// Version 1: plain strings
+function upload(name: string, uri: string, overwrite: boolean): void {
+  // ...
+}
+
+// AI swaps the arguments — compiles fine, bug ships
+upload(blobUri, documentName, true);  // ← no error</pre>
+      </div>
+    </div>
+
+    <div class="skill-file">
+      <div class="skill-file-header">Branded types: compile-time protection</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>// Version 2: branded types
+type DocumentName = string &amp; { readonly __brand: "DocumentName" };
+type BlobUri = string &amp; { readonly __brand: "BlobUri" };
+
+function upload(name: DocumentName, uri: BlobUri, overwrite: boolean): void {
+  // ...
+}
+
+// AI swaps the arguments — compiler catches it immediately
+upload(blobUri, documentName, true);
+//     ^^^^^^^ Error: Argument of type 'BlobUri' is not
+//             assignable to parameter of type 'DocumentName'</pre>
+      </div>
+    </div>
+
+    <p>The principle is straightforward: <strong>the more specific your types, the fewer bugs slip through.</strong> Each branded type costs you two lines of code and zero runtime overhead. In return, you get a guardrail that catches an entire class of argument-ordering mistakes&mdash;mistakes that are especially common when AI generates function calls it has never seen before.</p>
+
+    <div class="callout info">
+      <p><strong>Other languages:</strong> In Rust, use newtype wrappers (<code>struct DocumentName(String)</code>). In Go, use defined types (<code>type DocumentName string</code>). In Java, use records or wrapper classes. The pattern is universal: distinct types for distinct concepts.</p>
+    </div>
+
+    <!-- TYPES AS DOCUMENTATION FOR AI -->
+    <h2>Types as Documentation for AI</h2>
+
+    <p>Strong types do not just protect against mistakes&mdash;they actively help the AI write better code in the first place. When an AI agent reads your codebase and sees <code>userId: UserId</code> instead of <code>userId: string</code>, it has more semantic information to work with. The type name communicates intent in a way that a bare <code>string</code> never can.</p>
+
+    <p>This works because types constrain the solution space. When a function parameter is typed as <code>string</code>, the AI has an enormous number of valid values it could pass. When the parameter is typed as <code>UserId</code>, the set of valid values shrinks dramatically. Fewer valid options means fewer wrong ones.</p>
+
+    <p>This connects directly to the guardrails philosophy from <a href="guard-01-autonomy-ladder.html">Lesson 1: The Autonomy Ladder</a>. As you climb toward higher autonomy&mdash;especially when running headless agents as you learned in <a href="claude-09-headless-sessions.html">Headless Sessions</a>&mdash;you need guardrails that work without human oversight. The compiler is exactly that: a deterministic check that runs on every build, requires no human in the loop, and never gets tired or distracted.</p>
+
+    <div class="callout insight">
+      <p><strong>The dual benefit:</strong> Stronger types simultaneously make AI-generated code more correct (by constraining the solution space) and make AI mistakes more catchable (by turning silent bugs into compile errors). This is rare&mdash;most guardrails only do one or the other.</p>
+    </div>
+
+    <p>If you are working in a project that uses <a href="https://buildlittleworlds.github.io/claude-code-skills-basics-and-beyond/">Claude Code Skills</a>, consider encoding type expectations in your CLAUDE.md or project instructions. Tell the agent: &ldquo;Always use branded types for domain identifiers.&rdquo; The combination of a type-system guardrail and a prompt-level instruction creates defense in depth.</p>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Find a vulnerable function</span>
+      <div class="step-content">
+        <p>Look at a project you are currently working on. Find a function that takes multiple string parameters&mdash;for example, a function that accepts a <code>name</code>, a <code>path</code>, and a <code>description</code>, all typed as <code>string</code>.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Simulate an AI mistake</span>
+      <div class="step-content">
+        <p>Imagine that an AI agent called this function with two of the string arguments swapped. Would anything catch it? No compiler error, no type mismatch, no runtime exception&mdash;just wrong behavior that might not surface until a user reports it.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Add type guardrails</span>
+      <div class="step-content">
+        <p>Consider wrapping those parameters in distinct types. Even simple type aliases provide documentation value; branded types provide compile-time safety. Here is a minimal pattern for TypeScript:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <pre>// Create a branded type in two lines
+type FilePath = string &amp; { readonly __brand: "FilePath" };
+type Description = string &amp; { readonly __brand: "Description" };
+
+// Use a helper to create values
+function asFilePath(value: string): FilePath {
+  return value as FilePath;
+}
+
+function asDescription(value: string): Description {
+  return value as Description;
+}</pre>
+        </div>
+        <p>This costs almost nothing to add and creates a permanent guardrail against argument-swapping bugs&mdash;whether those bugs come from humans or AI agents.</p>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>A compiler is a free, deterministic guardrail that never forgets</li>
+      <li>Primitive types (<code>string</code>, <code>number</code>) let argument-swapping bugs through silently</li>
+      <li>Record/branded types turn argument swaps into compile-time errors</li>
+      <li>Stronger types both protect against AI mistakes and help AI write better code</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="guard-04-deterministic-tools.html">Lesson 4: Deterministic Tools Over Prompts</a>, you&rsquo;ll learn why you should use linters and formatters as guardrails instead of hoping the AI follows style rules&mdash;because a tool that runs automatically is always more reliable than a prompt that might be ignored.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="guard-02-permission-tiers.html" class="prev">Permission Tiers</a>
+      <a href="guard-04-deterministic-tools.html" class="next">Deterministic Tools Over Prompts</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+
+        <!-- Track 5: Guardrails for Speed -->
+        <li class="nav-phase-label">Intermediate: Guardrails for Speed</li>
+        <li><a href="guard-01-autonomy-ladder.html">1. The Autonomy Ladder</a></li>
+        <li><a href="guard-02-permission-tiers.html">2. Permission Tiers</a></li>
+        <li><a href="guard-03-compiler-guardrail.html" class="current">3. The Compiler as Guardrail</a></li>
+        <li><a href="guard-04-deterministic-tools.html">4. Deterministic Tools Over Prompts</a></li>
+        <li><a href="guard-05-hooks-as-guardrails.html">5. Hooks as Guardrails</a></li>
+        <li><a href="guard-06-test-automation.html">6. Test Automation That Guards</a></li>
+        <li><a href="guard-07-shift-left.html">7. Shift Left</a></li>
+        <li><a href="guard-08-token-budget.html">8. Token Budget Engineering</a></li>
+        <li><a href="guard-09-architectural-constraints.html">9. Architectural Constraints as Code</a></li>
+        <li><a href="guard-10-building-your-pipeline.html">10. Building Your Pipeline</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>

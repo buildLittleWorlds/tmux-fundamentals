@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Launching the Agents — tmux for AI-Powered Development</title>
+  <title>Token Budget Engineering &mdash; tmux for AI-Powered Development</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
       <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
       <nav>
         <a href="index.html">Tracks</a>
-        <span class="track-label">Multi-Agent Orchestration</span>
+        <span class="track-label">Guardrails for Speed</span>
       </nav>
     </div>
   </header>
@@ -31,151 +31,175 @@
     </div>
 
     <!-- PAGE TITLE -->
-    <h1 class="page-title">Launching the Agents</h1>
+    <h1 class="page-title">Token Budget Engineering</h1>
 
     <!-- LESSON METADATA -->
     <div class="course-meta">
-      <span class="meta-pill">Lesson <strong>2</strong> of 10</span>
-      <span class="meta-pill"><strong>Advanced</strong></span>
-      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+      <span class="meta-pill">Lesson <strong>8</strong> of 10</span>
+      <span class="meta-pill"><strong>Intermediate</strong></span>
+      <span class="meta-pill">Track: Guardrails for Speed</span>
     </div>
 
     <!-- LEAD PARAGRAPH -->
-    <p class="lead">With three sessions running, you need a way to start AI agents in the background sessions without leaving your control seat. In this lesson you&rsquo;ll learn <code>tmux send-keys</code>&mdash;the command that lets you type into any session remotely&mdash;and <code>tmux capture-pane</code> to peek at what&rsquo;s happening inside each one.</p>
+    <p class="lead">Every guardrail you add to the agentic loop consumes context window tokens. A test suite that dumps 500 lines of passing results, a linter that reports &ldquo;all clean&rdquo; with verbose formatting, a compiler that logs every file it touches&mdash;these eat through your token budget without helping the agent. Token budget engineering is the art of giving the agent exactly the information it needs and nothing more.</p>
 
-    <!-- CONCEPT -->
-    <h2>Remote Control with send-keys</h2>
+    <!-- THE SIGNAL-TO-NOISE PROBLEM -->
+    <h2>The Signal-to-Noise Problem</h2>
 
-    <p>The <code>tmux send-keys</code> command sends keystrokes to a target session as if you were typing them there. The syntax is:</p>
+    <p>When a test suite passes, the agent needs exactly one signal: &ldquo;tests pass.&rdquo; When a test fails, the agent needs: which test failed, what was expected, what happened, and the relevant stack trace. Most tools produce verbose output in both cases. Your job is to wrap them.</p>
 
-    <div class="copy-wrapper">
-      <button class="copy-btn">Copy</button>
-      <div class="terminal-block">tmux send-keys -t <em>session-name</em> 'command here' Enter</div>
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Tool Output</th>
+          <th>Tokens (approx)</th>
+          <th>Signal Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Full test suite pass (500 lines)</td>
+          <td>~2000</td>
+          <td>Zero&mdash;agent already knows it passed</td>
+        </tr>
+        <tr>
+          <td>Quiet wrapper: &ldquo;All 47 tests passing&rdquo;</td>
+          <td>~10</td>
+          <td>Same signal, 200x fewer tokens</td>
+        </tr>
+        <tr>
+          <td>Full test failure with logs</td>
+          <td>~2000</td>
+          <td>Moderate&mdash;much is noise</td>
+        </tr>
+        <tr>
+          <td>Filtered failure: name + expected + actual</td>
+          <td>~50</td>
+          <td>High&mdash;exactly what agent needs</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- THE WRAPPER PATTERN -->
+    <h2>The Wrapper Pattern</h2>
+
+    <p>Every deterministic tool should have a wrapper that:</p>
+
+    <ol>
+      <li>Runs the tool</li>
+      <li>Checks the exit code</li>
+      <li>On success: emit a single-line summary</li>
+      <li>On failure: emit only the relevant error information</li>
+    </ol>
+
+    <div class="skill-file">
+      <div class="skill-file-header">tool-wrapper.sh &mdash; generic quiet wrapper</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>#!/bin/bash
+# tool-wrapper.sh — generic quiet wrapper
+TOOL_NAME="$1"
+shift
+
+OUTPUT=$("$@" 2>&amp;1)
+EXIT=$?
+
+if [ $EXIT -eq 0 ]; then
+  echo "$TOOL_NAME: OK"
+else
+  echo "$TOOL_NAME: FAILED" &gt;&amp;2
+  echo "$OUTPUT" | grep -A 2 -E '(FAIL|ERROR|Error:|error:)' &gt;&amp;2
+  exit 2
+fi</pre>
+      </div>
     </div>
 
-    <p>The <code>-t</code> flag targets a specific session. The literal word <code>Enter</code> at the end simulates pressing the Enter key. Without it, the command would appear typed but never execute.</p>
+    <!-- CONTEXT WINDOW AS A SCARCE RESOURCE -->
+    <h2>Context Window as a Scarce Resource</h2>
 
-    <div class="callout info">
-      <p><strong>Why this matters:</strong> In a multi-agent workflow, you never need to leave the control session. You launch agents, send them prompts, and check their output&mdash;all from one place. This is the foundation of the orchestration pattern you&rsquo;ll use throughout this track.</p>
-    </div>
+    <p>The context window is the agent&rsquo;s working memory. Every token used by tool output is a token not available for reasoning about the problem. This becomes critical in long agentic sessions or multi-step tasks where the agent makes many tool calls.</p>
 
-    <h2>Reading Output with capture-pane</h2>
+    <p>Strategies for managing the budget:</p>
 
-    <p>To see what&rsquo;s happening in a background session, use <code>tmux capture-pane</code>:</p>
+    <ol>
+      <li><strong>Quiet wrappers</strong> (as above)</li>
+      <li><strong>Diff-only checking</strong> (from <a href="guard-04-deterministic-tools.html">Lesson 4</a>)&mdash;less input = fewer tokens</li>
+      <li><strong>Structured error output</strong>&mdash;parseable, not narrative</li>
+      <li><strong>Avoid redundant information</strong>&mdash;don&rsquo;t show the same file content twice</li>
+      <li><strong>Use <code>tail</code> and <code>head</code></strong> to limit output length in hook scripts</li>
+    </ol>
 
-    <div class="copy-wrapper">
-      <button class="copy-btn">Copy</button>
-      <div class="terminal-block">tmux capture-pane -t <em>session-name</em> -p | tail -20</div>
-    </div>
+    <!-- MEASURING YOUR TOKEN SPEND -->
+    <h2>Measuring Your Token Spend</h2>
 
-    <p>The <code>-p</code> flag prints the captured content to stdout (instead of into a tmux buffer), so you can pipe it through <code>tail</code> to see just the most recent lines. This gives you a read-only snapshot of what the agent is doing.</p>
+    <p>You can estimate token spend by looking at how much output your guardrails produce. A rough rule: 1 token &asymp; 4 characters of English text.</p>
+
+    <ul>
+      <li>If your test wrapper produces 200 characters on success and your agent makes 20 edits, that&rsquo;s ~1000 tokens for test feedback alone&mdash;manageable.</li>
+      <li>If your raw test output is 50,000 characters per run &times; 20 runs, that&rsquo;s ~250,000 tokens&mdash;potentially exceeding your context window.</li>
+    </ul>
 
     <!-- EXERCISE -->
-    <h2>Exercise: Start Both Agents</h2>
+    <h2>Exercise</h2>
 
     <div class="step-card">
       <span class="step-number">1</span>
-      <span class="step-title">Launch Claude in the claude-api session</span>
+      <span class="step-title">Count your raw test output</span>
       <div class="step-content">
-        <p>From your control session, send the command to start Claude Code in the background session:</p>
+        <p>Run your project&rsquo;s test suite and count the lines of output on a passing run:</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block">tmux send-keys -t claude-api 'claude' Enter</div>
+          <div class="terminal-block">npm test 2>&amp;1 | wc -l</div>
         </div>
-        <p>Claude is now starting up in the <code>claude-api</code> session. You won&rsquo;t see anything happen in your current terminal&mdash;the keystrokes were sent to the other session.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">2</span>
-      <span class="step-title">Launch Codex in the codex-cli session</span>
+      <span class="step-title">Write a quiet wrapper</span>
       <div class="step-content">
-        <p>Do the same for Codex CLI:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">tmux send-keys -t codex-cli 'codex --no-alt-screen' Enter</div>
-        </div>
-        <p>The <code>--no-alt-screen</code> flag keeps Codex output in the normal terminal buffer, which makes it easier to capture with <code>capture-pane</code> later.</p>
+        <p>Write a wrapper script that reduces passing output to a single line. Use the generic wrapper template above as a starting point.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">3</span>
-      <span class="step-title">Verify both agents are running</span>
+      <span class="step-title">Compare the output</span>
       <div class="step-content">
-        <p>Peek at each session to confirm the agents started successfully:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block"><span class="comment"># Quick peek at Claude's session</span>
-tmux capture-pane -t claude-api -p | tail -20
-
-<span class="comment"># Quick peek at Codex's session</span>
-tmux capture-pane -t codex-cli -p | tail -20</div>
-        </div>
-        <p>You should see each agent&rsquo;s startup output&mdash;a welcome message, prompt, or loading indicator. If you see just a shell prompt, the agent may still be loading; wait a few seconds and try again.</p>
+        <p>Run the wrapper and compare: same signal, drastically fewer lines.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">4</span>
-      <span class="step-title">Split your control session for coordination</span>
+      <span class="step-title">Wire it into a hook</span>
       <div class="step-content">
-        <p>Set up a two-pane layout in your control session&mdash;one side for commands, the other for testing:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block"><span class="comment"># Split the control session vertically</span>
-Ctrl+J %</div>
-        </div>
-        <ul>
-          <li><strong>Left pane</strong> &mdash; your command center (sending commands to agents)</li>
-          <li><strong>Right pane</strong> &mdash; for testing and integration work</li>
-        </ul>
-        <p>Switch between panes with <code>Ctrl+J &larr;</code> and <code>Ctrl+J &rarr;</code>.</p>
+        <p>Wire the wrapper into a PostToolUse hook and run a Claude session.</p>
       </div>
     </div>
 
-    <!-- COMMAND REFERENCE -->
-    <h2>Command Reference</h2>
-
-    <table class="tool-table">
-      <thead>
-        <tr>
-          <th>Command</th>
-          <th>What It Does</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>tmux send-keys -t name 'cmd' Enter</code></td>
-          <td>Send a command to a named session</td>
-        </tr>
-        <tr>
-          <td><code>tmux capture-pane -t name -p</code></td>
-          <td>Print the visible contents of a session&rsquo;s pane</td>
-        </tr>
-        <tr>
-          <td><code>tmux capture-pane -t name -p | tail -N</code></td>
-          <td>Show just the last N lines of a session&rsquo;s output</td>
-        </tr>
-        <tr>
-          <td><code>Ctrl+J %</code></td>
-          <td>Split the current window into left/right panes</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Verify failure handling</span>
+      <div class="step-content">
+        <p>Check: does Claude still respond correctly to test failures with the reduced output?</p>
+      </div>
+    </div>
 
     <!-- CHECKPOINT -->
     <h2>Checkpoint</h2>
 
     <ul class="checklist">
-      <li>Both AI agents are running in background sessions</li>
-      <li>You can see their output with <code>tmux capture-pane</code></li>
-      <li>Your control session has a split-pane layout ready for coordination</li>
+      <li>Every guardrail in the agentic loop consumes context window tokens</li>
+      <li>Quiet wrappers: single-line on success, filtered errors on failure</li>
+      <li>The context window is a scarce resource&mdash;protect it</li>
+      <li>Diff-only checking reduces both token spend and processing time</li>
+      <li>Measure your token budget: rough estimate is 4 characters per token</li>
     </ul>
 
     <!-- WHAT'S NEXT -->
     <div class="callout success">
-      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-03-assigning-tasks.html">Lesson 3: Assigning Tasks</a>, you&rsquo;ll give each agent their specific task&mdash;Claude gets the API, Codex gets the CLI&mdash;and set up a handoff artifact so Codex can build against Claude&rsquo;s API contract.</p>
+      <p><strong>What&rsquo;s Next:</strong> In <a href="guard-09-architectural-constraints.html">Lesson 9: Architectural Constraints as Code</a>, you&rsquo;ll go beyond line-level linting to enforce structural rules like dependency direction, layer boundaries, and module isolation as automated tests.</p>
     </div>
 
     <!-- DIVIDER -->
@@ -183,8 +207,8 @@ Ctrl+J %</div>
 
     <!-- PAGE NAVIGATION (Prev/Next) -->
     <nav class="page-nav">
-      <a href="parallel-01-multi-session-architecture.html" class="prev">Multi-Session Architecture</a>
-      <a href="parallel-03-assigning-tasks.html" class="next">Assigning Tasks</a>
+      <a href="guard-07-shift-left.html" class="prev">Shift Left</a>
+      <a href="guard-09-architectural-constraints.html" class="next">Architectural Constraints as Code</a>
     </nav>
 
     <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
@@ -224,7 +248,7 @@ Ctrl+J %</div>
         <!-- Track 3: Multi-Agent Orchestration -->
         <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
         <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
-        <li><a href="parallel-02-launching-agents.html" class="current">2. Launching the Agents</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
         <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
         <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
         <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
@@ -256,7 +280,7 @@ Ctrl+J %</div>
         <li><a href="guard-05-hooks-as-guardrails.html">5. Hooks as Guardrails</a></li>
         <li><a href="guard-06-test-automation.html">6. Test Automation That Guards</a></li>
         <li><a href="guard-07-shift-left.html">7. Shift Left</a></li>
-        <li><a href="guard-08-token-budget.html">8. Token Budget Engineering</a></li>
+        <li><a href="guard-08-token-budget.html" class="current">8. Token Budget Engineering</a></li>
         <li><a href="guard-09-architectural-constraints.html">9. Architectural Constraints as Code</a></li>
         <li><a href="guard-10-building-your-pipeline.html">10. Building Your Pipeline</a></li>
       </ul>

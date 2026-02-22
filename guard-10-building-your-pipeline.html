@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building Your Pipeline &mdash; tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Guardrails for Speed</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Building Your Pipeline</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>10</strong> of 10</span>
+      <span class="meta-pill"><strong>Intermediate</strong></span>
+      <span class="meta-pill">Track: Guardrails for Speed</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">You now have ten guardrails&mdash;permission tiers, compilers, linters, hooks, tests, shift-left strategies, token management, and architectural constraints. The final step is composing them into a reusable pipeline that travels with you from project to project. Your guardrail pipeline is your &ldquo;agentic layer&rdquo;&mdash;the engineering infrastructure that lets you safely climb the autonomy ladder.</p>
+
+    <!-- THE COMPLETE GUARDRAIL STACK -->
+    <h2>The Complete Guardrail Stack</h2>
+
+    <p>Here is every guardrail from this track, summarized in one table:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Lesson</th>
+          <th>Guardrail</th>
+          <th>Type</th>
+          <th>Enforcement</th>
+          <th>Catches</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2</td>
+          <td>Permission tiers</td>
+          <td>Built-in</td>
+          <td>Claude Code flags</td>
+          <td>Unauthorized tool use</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Compiler / type system</td>
+          <td>Language</td>
+          <td>Automatic</td>
+          <td>Type errors, argument swaps</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Linters / formatters</td>
+          <td>Deterministic tool</td>
+          <td>Hook or script</td>
+          <td>Style violations, common bugs</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Hooks</td>
+          <td>Claude Code</td>
+          <td>settings.json</td>
+          <td>Anything you script</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>Behavior tests</td>
+          <td>Test framework</td>
+          <td>Hook or manual</td>
+          <td>Functional regressions</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>Token wrappers</td>
+          <td>Custom scripts</td>
+          <td>Wrapper pattern</td>
+          <td>Context window overflow</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>Architecture tests</td>
+          <td>Custom scripts</td>
+          <td>Hook or test suite</td>
+          <td>Structural violations</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <p><strong>Lessons 1 and 7 are conceptual</strong>&mdash;they frame the autonomy ladder and shift-left principles. They don&rsquo;t add a specific guardrail tool, but they shape how you think about the entire stack.</p>
+    </div>
+
+    <!-- A STARTER PIPELINE -->
+    <h2>A Starter Pipeline</h2>
+
+    <p>Here is a complete, copy-able project structure for a guardrail pipeline. This is the <code>.claude/</code> directory you can carry from project to project:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">Project structure: .claude/ directory</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>.claude/
+├── settings.json          # Hook wiring
+└── hooks/
+    ├── protect-files.sh   # PreToolUse: block edits to protected files
+    ├── lint-on-edit.sh    # PostToolUse: run linter on changed files
+    ├── test-on-edit.sh    # PostToolUse: run tests (quiet wrapper)
+    ├── arch-check.sh      # Stop: verify architectural constraints
+    └── wrappers/
+        └── quiet-test.sh  # Token-efficient test runner</pre>
+      </div>
+    </div>
+
+    <p>And here is the <code>settings.json</code> that wires it all together:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">.claude/settings.json</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": ".claude/hooks/protect-files.sh \"$TOOL_NAME\"",
+        "timeout": 5000
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": ".claude/hooks/lint-on-edit.sh",
+        "timeout": 15000
+      },
+      {
+        "matcher": "Edit|Write",
+        "command": ".claude/hooks/test-on-edit.sh",
+        "timeout": 60000
+      }
+    ],
+    "Stop": [
+      {
+        "command": ".claude/hooks/arch-check.sh",
+        "timeout": 30000
+      }
+    ]
+  }
+}</pre>
+      </div>
+    </div>
+
+    <p>This configuration creates a three-layer pipeline:</p>
+
+    <ul>
+      <li><strong>Before edits</strong> (<code>PreToolUse</code>): Block writes to protected files before they happen</li>
+      <li><strong>After edits</strong> (<code>PostToolUse</code>): Run the linter and tests on every change</li>
+      <li><strong>Before finishing</strong> (<code>Stop</code>): Verify architectural constraints before Claude reports &ldquo;done&rdquo;</li>
+    </ul>
+
+    <!-- THE INCREMENTAL APPROACH -->
+    <h2>The Incremental Approach</h2>
+
+    <p>You do not need to install all guardrails on day one. Start where you feel the most pain:</p>
+
+    <ul>
+      <li><strong>Lots of regressions?</strong> &rarr; Add behavior tests (<a href="guard-06-test-automation.html">Lesson 6</a>) first</li>
+      <li><strong>Style fights with the agent?</strong> &rarr; Add a linter hook (<a href="guard-04-deterministic-tools.html">Lesson 4</a>) first</li>
+      <li><strong>Agent editing wrong files?</strong> &rarr; Add a file protection hook (<a href="guard-05-hooks-as-guardrails.html">Lesson 5</a>) first</li>
+      <li><strong>Context window overflowing?</strong> &rarr; Add quiet wrappers (<a href="guard-08-token-budget.html">Lesson 8</a>) first</li>
+    </ul>
+
+    <p>Each guardrail you add compounds. After a few projects, your pipeline becomes comprehensive&mdash;not because you built it all at once, but because each project taught you where the next gap was.</p>
+
+    <!-- TAKING YOUR PIPELINE TO THE NEXT PROJECT -->
+    <h2>Taking Your Pipeline to the Next Project</h2>
+
+    <p>Your <code>.claude/</code> directory with hooks and wrappers is portable. Copy it to new projects and adapt the specifics&mdash;file paths, test commands, linter configurations. Over time, you build a &ldquo;template&rdquo; that bootstraps any new project with your guardrail standards.</p>
+
+    <div class="callout info">
+      <p><strong>This is the &ldquo;agentic layer&rdquo;</strong>&mdash;your personal engineering infrastructure for working with AI agents. It grows with you. Every guardrail you add makes the next project safer and faster.</p>
+    </div>
+
+    <!-- CONNECTING THE CURRICULA -->
+    <h2>Connecting the Curricula</h2>
+
+    <p>This track taught you the guardrail mindset. Here is where to go next:</p>
+
+    <ul>
+      <li>The beginner tracks (<a href="claude-01-first-session.html">tmux + Claude Code</a> and <a href="codex-01-first-session.html">tmux + Codex CLI</a>) taught tmux fundamentals&mdash;the session management layer that makes multi-agent workflows possible.</li>
+      <li>The <a href="https://buildlittleworlds.github.io/claude-code-skills-basics-and-beyond/">Skills: Basics and Beyond</a> curriculum teaches custom slash commands, hooks, and agent teams&mdash;the tools you need to build sophisticated guardrail pipelines.</li>
+      <li>The <a href="parallel-01-multi-session-architecture.html">Multi-Agent Orchestration</a> track teaches the sub-agent patterns that enable shift-left validation (Agent 1 writes, Agent 2 validates).</li>
+      <li>The <a href="dx-01-skeleton.html">Developer Toolkit</a> track shows how to script these patterns into reusable shell commands.</li>
+    </ul>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create the hooks directory</span>
+      <div class="step-content">
+        <p>In a project of your choice, create the hooks directory:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">mkdir -p .claude/hooks/wrappers</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Add at least two hooks</span>
+      <div class="step-content">
+        <p>Copy or write at least two hooks from this track. For example, a file protection hook from <a href="guard-05-hooks-as-guardrails.html">Lesson 5</a> and a quiet test runner from <a href="guard-08-token-budget.html">Lesson 8</a>. Make them executable:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">chmod +x .claude/hooks/protect-files.sh
+chmod +x .claude/hooks/wrappers/quiet-test.sh</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Wire hooks into settings.json</span>
+      <div class="step-content">
+        <p>Create or update <code>.claude/settings.json</code> to reference your hooks, using the configuration shown in the &ldquo;A Starter Pipeline&rdquo; section above as a starting point.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Launch a headless agent with a real task</span>
+      <div class="step-content">
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux new-session -d -s pipeline-test
+tmux send-keys -t pipeline-test 'claude -p --dangerously-skip-permissions "Add a new utility function and write a test for it"' Enter</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Observe the pipeline</span>
+      <div class="step-content">
+        <p>Attach to the session and watch the hooks in action:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux attach -t pipeline-test</div>
+        </div>
+        <p>Do the hooks fire? Does the agent self-correct when a guardrail triggers? This is the feedback loop that makes guardrails valuable&mdash;they do not just catch errors, they teach the agent to avoid them.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">6</span>
+      <span class="step-title">Clean up</span>
+      <div class="step-content">
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">tmux kill-session -t pipeline-test</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>You can compose guardrails from Lessons 2&ndash;9 into a reusable pipeline</li>
+      <li>The <code>.claude/hooks/</code> directory and <code>settings.json</code> are your guardrail infrastructure</li>
+      <li>Start incrementally&mdash;add guardrails where you feel the most pain</li>
+      <li>Your pipeline is portable across projects</li>
+      <li>Guardrails compound: each one makes the next project safer and faster</li>
+    </ul>
+
+    <!-- CONGRATULATIONS -->
+    <div class="callout success">
+      <p><strong>Congratulations!</strong> You have completed the Guardrails for Speed track. You now understand not just how to make AI agents work faster, but how to make them work safely at speed. The guardrail mindset&mdash;deterministic enforcement, shift-left feedback, token-efficient wrappers, and incremental adoption&mdash;is the engineering skill that separates productive agentic workflows from expensive chaos.</p>
+    </div>
+
+    <!-- WHAT'S NEXT -->
+    <h2>What&rsquo;s Next</h2>
+
+    <div class="callout info">
+      <p><strong>Continue your learning:</strong></p>
+      <ul>
+        <li><a href="https://buildlittleworlds.github.io/claude-code-skills-basics-and-beyond/">Skills: Basics and Beyond</a>&mdash;build custom commands and hooks that power your guardrail pipeline</li>
+        <li><a href="parallel-01-multi-session-architecture.html">Multi-Agent Orchestration</a>&mdash;learn sub-agent validation patterns (Agent 1 writes, Agent 2 validates)</li>
+        <li><a href="dx-01-skeleton.html">Developer Toolkit</a>&mdash;script your guardrail pipelines into reusable shell commands</li>
+      </ul>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="guard-09-architectural-constraints.html" class="prev">Architectural Constraints as Code</a>
+      <span></span>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+
+        <!-- Track 5: Guardrails for Speed -->
+        <li class="nav-phase-label">Intermediate: Guardrails for Speed</li>
+        <li><a href="guard-01-autonomy-ladder.html">1. The Autonomy Ladder</a></li>
+        <li><a href="guard-02-permission-tiers.html">2. Permission Tiers</a></li>
+        <li><a href="guard-03-compiler-guardrail.html">3. The Compiler as Guardrail</a></li>
+        <li><a href="guard-04-deterministic-tools.html">4. Deterministic Tools Over Prompts</a></li>
+        <li><a href="guard-05-hooks-as-guardrails.html">5. Hooks as Guardrails</a></li>
+        <li><a href="guard-06-test-automation.html">6. Test Automation That Guards</a></li>
+        <li><a href="guard-07-shift-left.html">7. Shift Left</a></li>
+        <li><a href="guard-08-token-budget.html">8. Token Budget Engineering</a></li>
+        <li><a href="guard-09-architectural-constraints.html">9. Architectural Constraints as Code</a></li>
+        <li><a href="guard-10-building-your-pipeline.html" class="current">10. Building Your Pipeline</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>

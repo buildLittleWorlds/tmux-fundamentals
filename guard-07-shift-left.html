@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Launching the Agents — tmux for AI-Powered Development</title>
+  <title>Shift Left &mdash; tmux for AI-Powered Development</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
       <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
       <nav>
         <a href="index.html">Tracks</a>
-        <span class="track-label">Multi-Agent Orchestration</span>
+        <span class="track-label">Guardrails for Speed</span>
       </nav>
     </div>
   </header>
@@ -31,151 +31,166 @@
     </div>
 
     <!-- PAGE TITLE -->
-    <h1 class="page-title">Launching the Agents</h1>
+    <h1 class="page-title">Shift Left</h1>
 
     <!-- LESSON METADATA -->
     <div class="course-meta">
-      <span class="meta-pill">Lesson <strong>2</strong> of 10</span>
-      <span class="meta-pill"><strong>Advanced</strong></span>
-      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+      <span class="meta-pill">Lesson <strong>7</strong> of 10</span>
+      <span class="meta-pill"><strong>Intermediate</strong></span>
+      <span class="meta-pill">Track: Guardrails for Speed</span>
     </div>
 
     <!-- LEAD PARAGRAPH -->
-    <p class="lead">With three sessions running, you need a way to start AI agents in the background sessions without leaving your control seat. In this lesson you&rsquo;ll learn <code>tmux send-keys</code>&mdash;the command that lets you type into any session remotely&mdash;and <code>tmux capture-pane</code> to peek at what&rsquo;s happening inside each one.</p>
+    <p class="lead">&ldquo;Shift left&rdquo; means moving quality checks earlier in the process. In traditional development, bugs found in code review are cheaper than bugs found in production. With AI agents, the same principle applies but at a faster cadence: guardrails inside the agentic loop catch problems in seconds, not hours. Every guardrail you pull into the loop is one less thing you need to check manually.</p>
 
-    <!-- CONCEPT -->
-    <h2>Remote Control with send-keys</h2>
+    <!-- WHERE GUARDRAILS CAN LIVE -->
+    <h2>Where Guardrails Can Live</h2>
 
-    <p>The <code>tmux send-keys</code> command sends keystrokes to a target session as if you were typing them there. The syntax is:</p>
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>When It Runs</th>
+          <th>Who Fixes It</th>
+          <th>Time to Fix</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>In the prompt</strong></td>
+          <td>Before generation</td>
+          <td>Agent preempts the bug</td>
+          <td>Seconds</td>
+        </tr>
+        <tr>
+          <td><strong>In the agentic loop (hooks)</strong></td>
+          <td>During generation</td>
+          <td>Agent self-corrects</td>
+          <td>Seconds to minutes</td>
+        </tr>
+        <tr>
+          <td><strong>After agent completes</strong></td>
+          <td>Before your review</td>
+          <td>You tell the agent to fix it</td>
+          <td>Minutes</td>
+        </tr>
+        <tr>
+          <td><strong>During PR review</strong></td>
+          <td>After code is submitted</td>
+          <td>Another human</td>
+          <td>Hours</td>
+        </tr>
+        <tr>
+          <td><strong>In CI/CD</strong></td>
+          <td>After merge</td>
+          <td>The team</td>
+          <td>Hours to days</td>
+        </tr>
+        <tr>
+          <td><strong>In production</strong></td>
+          <td>After deployment</td>
+          <td>Everyone</td>
+          <td>Days+</td>
+        </tr>
+      </tbody>
+    </table>
 
-    <div class="copy-wrapper">
-      <button class="copy-btn">Copy</button>
-      <div class="terminal-block">tmux send-keys -t <em>session-name</em> 'command here' Enter</div>
+    <p>The closer a guardrail is to the point of code generation, the cheaper the fix. This is the shift-left principle applied to agentic engineering.</p>
+
+    <!-- FROM POST-REVIEW TO IN-LOOP -->
+    <h2>From Post-Review to In-Loop</h2>
+
+    <p>Take the guardrails from previous lessons and see where they fit:</p>
+
+    <ul>
+      <li><strong>Compiler (<a href="guard-03-compiler-guardrail.html">Lesson 3</a>):</strong> Already in-loop&mdash;runs automatically during development</li>
+      <li><strong>Linter (<a href="guard-04-deterministic-tools.html">Lesson 4</a>):</strong> Move from CI to in-loop with a PostToolUse hook</li>
+      <li><strong>Tests (<a href="guard-06-test-automation.html">Lesson 6</a>):</strong> Move from CI to in-loop with a PostToolUse hook (<code>test-quiet.sh</code>)</li>
+      <li><strong>File protection (<a href="guard-05-hooks-as-guardrails.html">Lesson 5</a>):</strong> In-loop via PreToolUse hook&mdash;blocks before the damage happens</li>
+      <li><strong>Code review:</strong> Still happens, but the agent has already addressed formatting, linting, and test failures</li>
+    </ul>
+
+    <!-- THE COMPOUND COST OF LATE FEEDBACK -->
+    <h2>The Compound Cost of Late Feedback</h2>
+
+    <p>When an agent writes code and finds out 20 minutes later (in CI) that the linting failed, it has already built more code on top of that foundation.</p>
+
+    <p>When the same agent gets linting feedback immediately via a hook, it fixes the issue and continues on a clean foundation.</p>
+
+    <div class="callout warning">
+      <p><strong>Misalignment compounds.</strong> A subtle bug in step 1 gets baked into steps 2&ndash;10. Shift left catches the misalignment before it propagates.</p>
     </div>
 
-    <p>The <code>-t</code> flag targets a specific session. The literal word <code>Enter</code> at the end simulates pressing the Enter key. Without it, the command would appear typed but never execute.</p>
+    <!-- SUB-AGENTS AS SHIFT-LEFT TOOLS -->
+    <h2>Sub-agents as Shift-Left Tools</h2>
 
-    <div class="callout info">
-      <p><strong>Why this matters:</strong> In a multi-agent workflow, you never need to leave the control session. You launch agents, send them prompts, and check their output&mdash;all from one place. This is the foundation of the orchestration pattern you&rsquo;ll use throughout this track.</p>
+    <p>The multi-agent orchestration pattern (see <a href="parallel-01-multi-session-architecture.html">Multi-Session Architecture</a>) enables a powerful shift-left technique: a primary agent writes code, then a secondary agent reviews and validates before anyone sees it.</p>
+
+    <p>Conceptual workflow:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">Multi-agent shift-left workflow</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>Agent 1: Implement the feature
+    &darr;
+Agent 2: Run tests, lint, validate architecture
+    &darr;
+Agent 1: Fix any issues
+    &darr;
+Result:  Clean code on first human review</pre>
+      </div>
     </div>
-
-    <h2>Reading Output with capture-pane</h2>
-
-    <p>To see what&rsquo;s happening in a background session, use <code>tmux capture-pane</code>:</p>
-
-    <div class="copy-wrapper">
-      <button class="copy-btn">Copy</button>
-      <div class="terminal-block">tmux capture-pane -t <em>session-name</em> -p | tail -20</div>
-    </div>
-
-    <p>The <code>-p</code> flag prints the captured content to stdout (instead of into a tmux buffer), so you can pipe it through <code>tail</code> to see just the most recent lines. This gives you a read-only snapshot of what the agent is doing.</p>
 
     <!-- EXERCISE -->
-    <h2>Exercise: Start Both Agents</h2>
+    <h2>Exercise</h2>
 
     <div class="step-card">
       <span class="step-number">1</span>
-      <span class="step-title">Launch Claude in the claude-api session</span>
+      <span class="step-title">Audit your current guardrails</span>
       <div class="step-content">
-        <p>From your control session, send the command to start Claude Code in the background session:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">tmux send-keys -t claude-api 'claude' Enter</div>
-        </div>
-        <p>Claude is now starting up in the <code>claude-api</code> session. You won&rsquo;t see anything happen in your current terminal&mdash;the keystrokes were sent to the other session.</p>
+        <p>List the guardrails you currently run, even informally&mdash;&ldquo;I always check the tests&rdquo; counts. For each one, identify where it currently lives on the timeline above.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">2</span>
-      <span class="step-title">Launch Codex in the codex-cli session</span>
+      <span class="step-title">Pick one to shift left</span>
       <div class="step-content">
-        <p>Do the same for Codex CLI:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">tmux send-keys -t codex-cli 'codex --no-alt-screen' Enter</div>
-        </div>
-        <p>The <code>--no-alt-screen</code> flag keeps Codex output in the normal terminal buffer, which makes it easier to capture with <code>capture-pane</code> later.</p>
+        <p>Pick one guardrail that currently runs &ldquo;after agent completes&rdquo; or later on the timeline.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">3</span>
-      <span class="step-title">Verify both agents are running</span>
+      <span class="step-title">Move it into the agentic loop</span>
       <div class="step-content">
-        <p>Peek at each session to confirm the agents started successfully:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block"><span class="comment"># Quick peek at Claude's session</span>
-tmux capture-pane -t claude-api -p | tail -20
-
-<span class="comment"># Quick peek at Codex's session</span>
-tmux capture-pane -t codex-cli -p | tail -20</div>
-        </div>
-        <p>You should see each agent&rsquo;s startup output&mdash;a welcome message, prompt, or loading indicator. If you see just a shell prompt, the agent may still be loading; wait a few seconds and try again.</p>
+        <p>Using a hook from <a href="guard-05-hooks-as-guardrails.html">Lesson 5</a>, wire up the guardrail so it runs inside the agentic loop instead of after it.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">4</span>
-      <span class="step-title">Split your control session for coordination</span>
+      <span class="step-title">Verify it fires during execution</span>
       <div class="step-content">
-        <p>Set up a two-pane layout in your control session&mdash;one side for commands, the other for testing:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block"><span class="comment"># Split the control session vertically</span>
-Ctrl+J %</div>
-        </div>
-        <ul>
-          <li><strong>Left pane</strong> &mdash; your command center (sending commands to agents)</li>
-          <li><strong>Right pane</strong> &mdash; for testing and integration work</li>
-        </ul>
-        <p>Switch between panes with <code>Ctrl+J &larr;</code> and <code>Ctrl+J &rarr;</code>.</p>
+        <p>Run a headless agent and verify the guardrail fires <em>during</em> (not after) execution. Check the hook output to confirm it ran at the right time.</p>
       </div>
     </div>
-
-    <!-- COMMAND REFERENCE -->
-    <h2>Command Reference</h2>
-
-    <table class="tool-table">
-      <thead>
-        <tr>
-          <th>Command</th>
-          <th>What It Does</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>tmux send-keys -t name 'cmd' Enter</code></td>
-          <td>Send a command to a named session</td>
-        </tr>
-        <tr>
-          <td><code>tmux capture-pane -t name -p</code></td>
-          <td>Print the visible contents of a session&rsquo;s pane</td>
-        </tr>
-        <tr>
-          <td><code>tmux capture-pane -t name -p | tail -N</code></td>
-          <td>Show just the last N lines of a session&rsquo;s output</td>
-        </tr>
-        <tr>
-          <td><code>Ctrl+J %</code></td>
-          <td>Split the current window into left/right panes</td>
-        </tr>
-      </tbody>
-    </table>
 
     <!-- CHECKPOINT -->
     <h2>Checkpoint</h2>
 
     <ul class="checklist">
-      <li>Both AI agents are running in background sessions</li>
-      <li>You can see their output with <code>tmux capture-pane</code></li>
-      <li>Your control session has a split-pane layout ready for coordination</li>
+      <li>Shift left = catch problems as close to code generation as possible</li>
+      <li>Hooks move guardrails into the agentic loop (seconds, not hours)</li>
+      <li>Compound cost: late feedback means fixing cascading problems</li>
+      <li>Sub-agents can validate each other&rsquo;s work before any human review</li>
+      <li>The goal: when you first see agent-generated code, it&rsquo;s already clean</li>
     </ul>
 
     <!-- WHAT'S NEXT -->
     <div class="callout success">
-      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-03-assigning-tasks.html">Lesson 3: Assigning Tasks</a>, you&rsquo;ll give each agent their specific task&mdash;Claude gets the API, Codex gets the CLI&mdash;and set up a handoff artifact so Codex can build against Claude&rsquo;s API contract.</p>
+      <p><strong>What&rsquo;s Next:</strong> In <a href="guard-08-token-budget.html">Lesson 8: Token Budget Engineering</a>, you&rsquo;ll learn the flip side of adding guardrails to the loop: every guardrail consumes context. Learn to manage the token budget so guardrails make the agent better, not slower.</p>
     </div>
 
     <!-- DIVIDER -->
@@ -183,8 +198,8 @@ Ctrl+J %</div>
 
     <!-- PAGE NAVIGATION (Prev/Next) -->
     <nav class="page-nav">
-      <a href="parallel-01-multi-session-architecture.html" class="prev">Multi-Session Architecture</a>
-      <a href="parallel-03-assigning-tasks.html" class="next">Assigning Tasks</a>
+      <a href="guard-06-test-automation.html" class="prev">Test Automation That Guards</a>
+      <a href="guard-08-token-budget.html" class="next">Token Budget Engineering</a>
     </nav>
 
     <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
@@ -224,7 +239,7 @@ Ctrl+J %</div>
         <!-- Track 3: Multi-Agent Orchestration -->
         <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
         <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
-        <li><a href="parallel-02-launching-agents.html" class="current">2. Launching the Agents</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
         <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
         <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
         <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
@@ -255,7 +270,7 @@ Ctrl+J %</div>
         <li><a href="guard-04-deterministic-tools.html">4. Deterministic Tools Over Prompts</a></li>
         <li><a href="guard-05-hooks-as-guardrails.html">5. Hooks as Guardrails</a></li>
         <li><a href="guard-06-test-automation.html">6. Test Automation That Guards</a></li>
-        <li><a href="guard-07-shift-left.html">7. Shift Left</a></li>
+        <li><a href="guard-07-shift-left.html" class="current">7. Shift Left</a></li>
         <li><a href="guard-08-token-budget.html">8. Token Budget Engineering</a></li>
         <li><a href="guard-09-architectural-constraints.html">9. Architectural Constraints as Code</a></li>
         <li><a href="guard-10-building-your-pipeline.html">10. Building Your Pipeline</a></li>

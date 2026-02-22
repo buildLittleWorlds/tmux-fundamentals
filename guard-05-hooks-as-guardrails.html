@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hooks as Guardrails &mdash; tmux for AI-Powered Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <p class="site-label">tmux + AI CLI</p>
+      <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
+      <nav>
+        <a href="index.html">Tracks</a>
+        <span class="track-label">Guardrails for Speed</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SLOGAN BANNER -->
+    <div class="slogan-banner">
+      <span class="main-slogan">See everything. Control everything.</span>
+      <span class="subtext">Interactive tutorials for mastering tmux with Claude Code and Codex CLI.</span>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <h1 class="page-title">Hooks as Guardrails</h1>
+
+    <!-- LESSON METADATA -->
+    <div class="course-meta">
+      <span class="meta-pill">Lesson <strong>5</strong> of 10</span>
+      <span class="meta-pill"><strong>Intermediate</strong></span>
+      <span class="meta-pill">Track: Guardrails for Speed</span>
+    </div>
+
+    <!-- LEAD PARAGRAPH -->
+    <p class="lead">Hooks are the most powerful guardrail mechanism in Claude Code. Unlike prompts (which the agent might ignore) or manual checks (which require you to be watching), hooks fire deterministically on specific events. They are guaranteed to run. The agent cannot skip them.</p>
+
+    <!-- CONCEPT: HOOK EVENTS -->
+    <h2>Hook Events as Guardrail Points</h2>
+
+    <p>Claude Code exposes four hook events. Each one is a deterministic enforcement point&mdash;a place where your code runs every time, regardless of what the agent decides:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Fires When</th>
+          <th>Guardrail Use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>PreToolUse</strong></td>
+          <td>Before any tool call</td>
+          <td>Block dangerous operations (edits to protected files, risky shell commands)</td>
+        </tr>
+        <tr>
+          <td><strong>PostToolUse</strong></td>
+          <td>After a tool call completes</td>
+          <td>Validate output, check for regressions</td>
+        </tr>
+        <tr>
+          <td><strong>Stop</strong></td>
+          <td>When the agent wants to stop</td>
+          <td>Enforce cleanup tasks (run tests, update docs, check linting)</td>
+        </tr>
+        <tr>
+          <td><strong>SubagentStop</strong></td>
+          <td>When a subagent completes</td>
+          <td>Validate subagent work before accepting it</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- CONCEPT: EXIT CODES -->
+    <h2>The Three Exit Codes</h2>
+
+    <p>Every hook script communicates with Claude Code through its exit code. There are exactly three possibilities:</p>
+
+    <ul>
+      <li><strong>exit 0</strong> &mdash; Allow the action, continue normally</li>
+      <li><strong>exit 1</strong> &mdash; Fatal error, stop the session</li>
+      <li><strong>exit 2</strong> &mdash; Block the action and feed the error message back to Claude (Claude sees stderr as feedback and can self-correct)</li>
+    </ul>
+
+    <div class="callout insight">
+      <p><strong>Exit code 2 is the guardrail sweet spot.</strong> It blocks bad behavior AND gives the agent a chance to fix itself. The agent sees your stderr message as corrective feedback and adjusts its next action accordingly.</p>
+    </div>
+
+    <!-- EXAMPLE: FILE PROTECTION HOOK -->
+    <h2>Example: File Protection Hook</h2>
+
+    <p>This PreToolUse hook prevents edits to production configuration files. If Claude tries to modify anything with &ldquo;production&rdquo; or &ldquo;.env&rdquo; in the path, the hook blocks it and tells Claude to use a staging copy instead:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">hooks/protect-production.sh</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>#!/bin/bash
+# protect-production.sh — PreToolUse hook
+# Blocks edits to production configuration files
+
+TOOL_NAME="$1"
+# Read tool input from stdin
+INPUT=$(cat)
+
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.command // ""')
+
+if [[ "$FILE_PATH" == *"production"* ]] || [[ "$FILE_PATH" == *".env"* ]]; then
+  echo "BLOCKED: Cannot modify production files. Use a staging copy instead." &gt;&amp;2
+  exit 2
+fi
+
+exit 0</pre>
+      </div>
+    </div>
+
+    <!-- EXAMPLE: POST-EDIT TEST RUNNER -->
+    <h2>Example: Post-Edit Test Runner</h2>
+
+    <p>This PostToolUse hook runs tests after every file edit. If tests fail, it blocks the action with exit code 2, giving Claude the feedback it needs to fix the problem:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">hooks/test-after-edit.sh</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>#!/bin/bash
+# test-after-edit.sh — PostToolUse hook, matcher: Edit|Write
+
+# Only run tests after file modifications
+TOOL_NAME="$1"
+if [[ "$TOOL_NAME" != "Edit" &amp;&amp; "$TOOL_NAME" != "Write" ]]; then
+  exit 0
+fi
+
+# Run tests (fast subset only)
+npm test --bail 2&gt;&amp;1 | tail -5
+TEST_EXIT=$?
+
+if [ $TEST_EXIT -ne 0 ]; then
+  echo "Tests failed after edit. Fix the failing tests before continuing." &gt;&amp;2
+  exit 2
+fi
+
+exit 0</pre>
+      </div>
+    </div>
+
+    <!-- WIRING HOOKS -->
+    <h2>Wiring Hooks into settings.json</h2>
+
+    <p>Hooks are configured in your project&rsquo;s <code>.claude/settings.json</code>. Each hook event takes an array of hook definitions with a <code>matcher</code> (which tools to trigger on), a <code>command</code> (what to run), and a <code>timeout</code> (in milliseconds):</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">.claude/settings.json</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "./hooks/protect-production.sh \"$TOOL_NAME\"",
+        "timeout": 10000
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "./hooks/test-after-edit.sh \"$TOOL_NAME\"",
+        "timeout": 30000
+      }
+    ]
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <p><strong>Connection to Skills:</strong> If you completed the <a href="https://buildlittleworlds.github.io/claude-code-skills-basics-and-beyond/">Skills: Basics and Beyond</a> curriculum, you built hooks in Course 7. This lesson extends that knowledge&mdash;instead of hooks for workflow automation, we&rsquo;re using hooks as safety guardrails for autonomous operation.</p>
+    </div>
+
+    <!-- EXERCISE -->
+    <h2>Exercise</h2>
+
+    <div class="step-card">
+      <span class="step-number">1</span>
+      <span class="step-title">Create a hooks directory</span>
+      <div class="step-content">
+        <p>Create a <code>hooks/</code> directory in your project:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">mkdir -p hooks</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">2</span>
+      <span class="step-title">Write an audit log hook</span>
+      <div class="step-content">
+        <p>Write a simple PreToolUse hook that logs every tool call to a file:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cat &gt; hooks/audit-log.sh &lt;&lt; 'EOF'
+#!/bin/bash
+# audit-log.sh — PreToolUse hook
+# Logs every tool call to an audit file
+
+TOOL_NAME="$1"
+INPUT=$(cat)
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+echo "[$TIMESTAMP] Tool: $TOOL_NAME" &gt;&gt; hooks/audit.log
+echo "  Input: $INPUT" &gt;&gt; hooks/audit.log
+echo "---" &gt;&gt; hooks/audit.log
+
+exit 0
+EOF
+chmod +x hooks/audit-log.sh</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">3</span>
+      <span class="step-title">Wire it into settings.json</span>
+      <div class="step-content">
+        <p>Add the hook to your <code>.claude/settings.json</code>:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">mkdir -p .claude
+cat &gt; .claude/settings.json &lt;&lt; 'EOF'
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "command": "./hooks/audit-log.sh \"$TOOL_NAME\"",
+        "timeout": 5000
+      }
+    ]
+  }
+}
+EOF</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">4</span>
+      <span class="step-title">Run Claude and check the log</span>
+      <div class="step-content">
+        <p>Run Claude interactively and give it a task. Then check the audit log:</p>
+        <div class="copy-wrapper">
+          <button class="copy-btn">Copy</button>
+          <div class="terminal-block">cat hooks/audit.log</div>
+        </div>
+        <p>You should see a timestamped record of every tool Claude called during the session.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <span class="step-number">5</span>
+      <span class="step-title">Consider blocking rules</span>
+      <div class="step-content">
+        <p>Review your audit log and consider: which tool calls would you want to block in a headless session? Which file paths should be off-limits? Which shell commands are too dangerous to run unsupervised?</p>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <h2>Checkpoint</h2>
+
+    <ul class="checklist">
+      <li>Hooks fire deterministically&mdash;the agent cannot skip them</li>
+      <li>Exit code 2 blocks the action and gives the agent corrective feedback</li>
+      <li>PreToolUse hooks prevent dangerous actions; PostToolUse hooks validate results</li>
+      <li>Stop hooks enforce end-of-session cleanup</li>
+      <li>Hooks are the bridge between &ldquo;trust the agent&rdquo; and &ldquo;verify the agent&rdquo;</li>
+    </ul>
+
+    <!-- WHAT'S NEXT -->
+    <div class="callout success">
+      <p><strong>What&rsquo;s Next:</strong> In <a href="guard-06-test-automation.html">Lesson 6: Test Automation That Guards</a>, tests are the most important guardrail, but not all tests are created equal. Learn to write tests that actually catch regressions in AI-generated code.</p>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- PAGE NAVIGATION (Prev/Next) -->
+    <nav class="page-nav">
+      <a href="guard-04-deterministic-tools.html" class="prev">Deterministic Tools Over Prompts</a>
+      <a href="guard-06-test-automation.html" class="next">Test Automation That Guards</a>
+    </nav>
+
+    <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
+    <nav class="site-nav-bottom">
+      <h3>All Lessons</h3>
+      <ul>
+        <!-- Getting Started -->
+        <li class="nav-phase-label">Getting Started</li>
+        <li><a href="setup.html">Setup &amp; Configuration</a></li>
+
+        <!-- Track 1: tmux + Claude Code -->
+        <li class="nav-phase-label">Beginner: tmux + Claude Code</li>
+        <li><a href="claude-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="claude-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="claude-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
+        <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="claude-06-windows.html">6. Windows</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
+        <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 2: tmux + Codex CLI -->
+        <li class="nav-phase-label">Beginner: tmux + Codex CLI</li>
+        <li><a href="codex-01-first-session.html">1. Your First Session</a></li>
+        <li><a href="codex-02-detach-reattach.html">2. Detach &amp; Reattach</a></li>
+        <li><a href="codex-03-split-panes.html">3. Split Panes</a></li>
+        <li><a href="codex-04-launch-codex.html">4. Launch Codex CLI</a></li>
+        <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
+        <li><a href="codex-06-windows.html">6. Windows</a></li>
+        <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
+        <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
+        <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
+
+        <!-- Track 3: Multi-Agent Orchestration -->
+        <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
+        <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
+        <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
+        <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
+        <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
+        <li><a href="parallel-06-synchronized-commands.html">6. Synchronized Commands</a></li>
+        <li><a href="parallel-07-conflict-resolution.html">7. Conflict Resolution</a></li>
+        <li><a href="parallel-08-session-scripts.html">8. Session Scripts</a></li>
+        <li><a href="parallel-09-capture-review.html">9. Capture &amp; Review</a></li>
+        <li><a href="parallel-10-complete-workflow.html">10. Complete Workflow</a></li>
+
+        <!-- Track 4: Developer Toolkit -->
+        <li class="nav-phase-label">Advanced: Developer Toolkit</li>
+        <li><a href="dx-01-skeleton.html">1. The dx Skeleton</a></li>
+        <li><a href="dx-02-choosing-ai.html">2. Choosing Your AI</a></li>
+        <li><a href="dx-03-review-command.html">3. Review Command</a></li>
+        <li><a href="dx-04-pr-command.html">4. PR Command</a></li>
+        <li><a href="dx-05-explain-command.html">5. Explain Command</a></li>
+        <li><a href="dx-06-test-command.html">6. Test Command</a></li>
+        <li><a href="dx-07-standup-command.html">7. Standup Command</a></li>
+        <li><a href="dx-08-popup-mode.html">8. Popup Mode</a></li>
+        <li><a href="dx-09-background-watchers.html">9. Background Watchers</a></li>
+        <li><a href="dx-10-installation.html">10. Installation</a></li>
+
+        <!-- Track 5: Guardrails for Speed -->
+        <li class="nav-phase-label">Intermediate: Guardrails for Speed</li>
+        <li><a href="guard-01-autonomy-ladder.html">1. The Autonomy Ladder</a></li>
+        <li><a href="guard-02-permission-tiers.html">2. Permission Tiers</a></li>
+        <li><a href="guard-03-compiler-guardrail.html">3. The Compiler as Guardrail</a></li>
+        <li><a href="guard-04-deterministic-tools.html">4. Deterministic Tools Over Prompts</a></li>
+        <li><a href="guard-05-hooks-as-guardrails.html" class="current">5. Hooks as Guardrails</a></li>
+        <li><a href="guard-06-test-automation.html">6. Test Automation That Guards</a></li>
+        <li><a href="guard-07-shift-left.html">7. Shift Left</a></li>
+        <li><a href="guard-08-token-budget.html">8. Token Budget Engineering</a></li>
+        <li><a href="guard-09-architectural-constraints.html">9. Architectural Constraints as Code</a></li>
+        <li><a href="guard-10-building-your-pipeline.html">10. Building Your Pipeline</a></li>
+      </ul>
+    </nav>
+
+  </main>
+
+  <footer>
+    <p>tmux + AI CLI &mdash; <a href="https://github.com/buildLittleWorlds/tmux-fundamentals">GitHub Repository</a></p>
+  </footer>
+
+  <script src="copy-code.js"></script>
+
+</body>
+</html>

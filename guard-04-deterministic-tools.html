@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Launching the Agents — tmux for AI-Powered Development</title>
+  <title>Deterministic Tools Over Prompts &mdash; tmux for AI-Powered Development</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
       <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
       <nav>
         <a href="index.html">Tracks</a>
-        <span class="track-label">Multi-Agent Orchestration</span>
+        <span class="track-label">Guardrails for Speed</span>
       </nav>
     </div>
   </header>
@@ -31,151 +31,173 @@
     </div>
 
     <!-- PAGE TITLE -->
-    <h1 class="page-title">Launching the Agents</h1>
+    <h1 class="page-title">Deterministic Tools Over Prompts</h1>
 
     <!-- LESSON METADATA -->
     <div class="course-meta">
-      <span class="meta-pill">Lesson <strong>2</strong> of 10</span>
-      <span class="meta-pill"><strong>Advanced</strong></span>
-      <span class="meta-pill">Track: Multi-Agent Orchestration</span>
+      <span class="meta-pill">Lesson <strong>4</strong> of 10</span>
+      <span class="meta-pill"><strong>Intermediate</strong></span>
+      <span class="meta-pill">Track: Guardrails for Speed</span>
     </div>
 
     <!-- LEAD PARAGRAPH -->
-    <p class="lead">With three sessions running, you need a way to start AI agents in the background sessions without leaving your control seat. In this lesson you&rsquo;ll learn <code>tmux send-keys</code>&mdash;the command that lets you type into any session remotely&mdash;and <code>tmux capture-pane</code> to peek at what&rsquo;s happening inside each one.</p>
+    <p class="lead">You could write &ldquo;always use 2-space indentation&rdquo; in your prompt. Or you could run a formatter that enforces it in milliseconds with zero tokens spent. The principle: if a deterministic tool can enforce a rule, don&rsquo;t ask the LLM to remember it.</p>
 
-    <!-- CONCEPT -->
-    <h2>Remote Control with send-keys</h2>
+    <!-- CONCEPT: PROMPT VS. TOOL -->
+    <h2>The Prompt vs. Tool Decision</h2>
 
-    <p>The <code>tmux send-keys</code> command sends keystrokes to a target session as if you were typing them there. The syntax is:</p>
+    <p>For every rule you want an AI agent to follow, ask: can a deterministic tool enforce this? If yes, use the tool. If no, use the prompt. Here is how common rules break down:</p>
 
-    <div class="copy-wrapper">
-      <button class="copy-btn">Copy</button>
-      <div class="terminal-block">tmux send-keys -t <em>session-name</em> 'command here' Enter</div>
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Rule</th>
+          <th>Prompt Approach</th>
+          <th>Tool Approach</th>
+          <th>Winner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Code formatting</td>
+          <td>&ldquo;Use 2-space indent&rdquo;</td>
+          <td>Prettier / ESLint <code>--fix</code></td>
+          <td><strong>Tool</strong></td>
+        </tr>
+        <tr>
+          <td>Import ordering</td>
+          <td>&ldquo;Sort imports alphabetically&rdquo;</td>
+          <td>eslint-plugin-import</td>
+          <td><strong>Tool</strong></td>
+        </tr>
+        <tr>
+          <td>No console.log in prod</td>
+          <td>&ldquo;Remove debug statements&rdquo;</td>
+          <td>ESLint <code>no-console</code> rule</td>
+          <td><strong>Tool</strong></td>
+        </tr>
+        <tr>
+          <td>API naming conventions</td>
+          <td>&ldquo;Use camelCase for endpoints&rdquo;</td>
+          <td>Custom linter rule</td>
+          <td><strong>Tool</strong></td>
+        </tr>
+        <tr>
+          <td>Don&rsquo;t modify config files</td>
+          <td>&ldquo;Never edit .env&rdquo;</td>
+          <td>Hook (PreToolUse)</td>
+          <td><strong>Tool</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The pattern: prompts are suggestions. Tools are enforcement.</p>
+
+    <!-- CONCEPT: DIFF-ONLY PRINCIPLE -->
+    <h2>The Diff-Only Principle</h2>
+
+    <p>When you add a linter or formatter to an agentic workflow, don&rsquo;t run it on the entire codebase&mdash;run it only on changed files. This keeps the feedback loop fast and avoids flooding the agent&rsquo;s context with irrelevant output.</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">lint-staged.sh &mdash; only lint what changed</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>#!/bin/bash
+# lint-staged.sh — only lint what changed
+STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx)$')
+if [ -z "$STAGED" ]; then
+  echo "No staged files to lint"
+  exit 0
+fi
+npx eslint $STAGED</pre>
+      </div>
     </div>
 
-    <p>The <code>-t</code> flag targets a specific session. The literal word <code>Enter</code> at the end simulates pressing the Enter key. Without it, the command would appear typed but never execute.</p>
+    <p>Why this matters: speed and token savings. Full-codebase linting wastes time and floods the context with noise the agent has to parse. Diff-only linting gives the agent exactly the signal it needs&mdash;errors in the files it just touched.</p>
 
-    <div class="callout info">
-      <p><strong>Why this matters:</strong> In a multi-agent workflow, you never need to leave the control session. You launch agents, send them prompts, and check their output&mdash;all from one place. This is the foundation of the orchestration pattern you&rsquo;ll use throughout this track.</p>
+    <!-- CONCEPT: WIRING TOOLS INTO AGENT WORKFLOWS -->
+    <h2>Wiring Tools into Agent Workflows</h2>
+
+    <p>There are three places to run deterministic tools in an agentic workflow:</p>
+
+    <ol>
+      <li><strong>Before the agent starts</strong> (pre-check: is the codebase clean?). If the linter already shows errors, the agent will waste tokens trying to understand pre-existing problems.</li>
+      <li><strong>Inside the agent&rsquo;s loop</strong> (as a hook or as part of the prompt: &ldquo;after making changes, run <code>./lint-staged.sh</code>&rdquo;). The agent sees the output and can fix issues itself without you intervening.</li>
+      <li><strong>After the agent finishes</strong> (post-validation before you review). A final gate that catches anything the agent missed.</li>
+    </ol>
+
+    <div class="callout insight">
+      <p><strong>The most powerful position is inside the loop.</strong> When a deterministic tool runs inside the agent&rsquo;s edit-test cycle, the agent can self-correct. This is guardrails enabling speed: the agent moves fast because the tool catches mistakes immediately, and the agent fixes them without waiting for you.</p>
     </div>
-
-    <h2>Reading Output with capture-pane</h2>
-
-    <p>To see what&rsquo;s happening in a background session, use <code>tmux capture-pane</code>:</p>
-
-    <div class="copy-wrapper">
-      <button class="copy-btn">Copy</button>
-      <div class="terminal-block">tmux capture-pane -t <em>session-name</em> -p | tail -20</div>
-    </div>
-
-    <p>The <code>-p</code> flag prints the captured content to stdout (instead of into a tmux buffer), so you can pipe it through <code>tail</code> to see just the most recent lines. This gives you a read-only snapshot of what the agent is doing.</p>
 
     <!-- EXERCISE -->
-    <h2>Exercise: Start Both Agents</h2>
+    <h2>Exercise</h2>
 
     <div class="step-card">
       <span class="step-number">1</span>
-      <span class="step-title">Launch Claude in the claude-api session</span>
+      <span class="step-title">Check for an existing linter</span>
       <div class="step-content">
-        <p>From your control session, send the command to start Claude Code in the background session:</p>
+        <p>Check if your current project has a linter configured:</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block">tmux send-keys -t claude-api 'claude' Enter</div>
+          <div class="terminal-block">npx eslint --version
+cat .eslintrc*</div>
         </div>
-        <p>Claude is now starting up in the <code>claude-api</code> session. You won&rsquo;t see anything happen in your current terminal&mdash;the keystrokes were sent to the other session.</p>
+        <p>If you don&rsquo;t have a linter, you can install one with <code>npm init @eslint/config</code> or use any project that already has one.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">2</span>
-      <span class="step-title">Launch Codex in the codex-cli session</span>
+      <span class="step-title">Create a lint-staged script</span>
       <div class="step-content">
-        <p>Do the same for Codex CLI:</p>
+        <p>If your project has a linter, create a <code>lint-staged.sh</code> script that runs the linter only on staged files. Use the script from the Diff-Only Principle section above. Make it executable:</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block">tmux send-keys -t codex-cli 'codex --no-alt-screen' Enter</div>
+          <div class="terminal-block">chmod +x lint-staged.sh</div>
         </div>
-        <p>The <code>--no-alt-screen</code> flag keeps Codex output in the normal terminal buffer, which makes it easier to capture with <code>capture-pane</code> later.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">3</span>
-      <span class="step-title">Verify both agents are running</span>
+      <span class="step-title">Run a headless agent with the linter in the loop</span>
       <div class="step-content">
-        <p>Peek at each session to confirm the agents started successfully:</p>
+        <p>Launch a headless Claude agent that makes a change and then runs the linter:</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block"><span class="comment"># Quick peek at Claude's session</span>
-tmux capture-pane -t claude-api -p | tail -20
-
-<span class="comment"># Quick peek at Codex's session</span>
-tmux capture-pane -t codex-cli -p | tail -20</div>
+          <div class="terminal-block">tmux new-session -d -s lint-test
+tmux send-keys -t lint-test 'claude -p --dangerously-skip-permissions "Add a helper function to utils.ts, then run ./lint-staged.sh and fix any issues"' Enter</div>
         </div>
-        <p>You should see each agent&rsquo;s startup output&mdash;a welcome message, prompt, or loading indicator. If you see just a shell prompt, the agent may still be loading; wait a few seconds and try again.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">4</span>
-      <span class="step-title">Split your control session for coordination</span>
+      <span class="step-title">Check the results</span>
       <div class="step-content">
-        <p>Set up a two-pane layout in your control session&mdash;one side for commands, the other for testing:</p>
+        <p>Attach to the session and review: did the agent self-correct based on linter output?</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block"><span class="comment"># Split the control session vertically</span>
-Ctrl+J %</div>
+          <div class="terminal-block">tmux attach -t lint-test</div>
         </div>
-        <ul>
-          <li><strong>Left pane</strong> &mdash; your command center (sending commands to agents)</li>
-          <li><strong>Right pane</strong> &mdash; for testing and integration work</li>
-        </ul>
-        <p>Switch between panes with <code>Ctrl+J &larr;</code> and <code>Ctrl+J &rarr;</code>.</p>
+        <p>Look for the pattern: the agent makes a change, the linter reports an issue, and the agent fixes it&mdash;all without your intervention. This is the power of deterministic tools inside the agentic loop.</p>
       </div>
     </div>
-
-    <!-- COMMAND REFERENCE -->
-    <h2>Command Reference</h2>
-
-    <table class="tool-table">
-      <thead>
-        <tr>
-          <th>Command</th>
-          <th>What It Does</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>tmux send-keys -t name 'cmd' Enter</code></td>
-          <td>Send a command to a named session</td>
-        </tr>
-        <tr>
-          <td><code>tmux capture-pane -t name -p</code></td>
-          <td>Print the visible contents of a session&rsquo;s pane</td>
-        </tr>
-        <tr>
-          <td><code>tmux capture-pane -t name -p | tail -N</code></td>
-          <td>Show just the last N lines of a session&rsquo;s output</td>
-        </tr>
-        <tr>
-          <td><code>Ctrl+J %</code></td>
-          <td>Split the current window into left/right panes</td>
-        </tr>
-      </tbody>
-    </table>
 
     <!-- CHECKPOINT -->
     <h2>Checkpoint</h2>
 
     <ul class="checklist">
-      <li>Both AI agents are running in background sessions</li>
-      <li>You can see their output with <code>tmux capture-pane</code></li>
-      <li>Your control session has a split-pane layout ready for coordination</li>
+      <li>Deterministic tools enforce rules with 100% reliability; prompts are suggestions</li>
+      <li>Run tools on diffs/staged files only, not the entire codebase</li>
+      <li>The most powerful position for a tool is inside the agentic loop</li>
+      <li>Formatting, linting, and style rules should never consume prompt tokens</li>
     </ul>
 
     <!-- WHAT'S NEXT -->
     <div class="callout success">
-      <p><strong>What&rsquo;s Next:</strong> In <a href="parallel-03-assigning-tasks.html">Lesson 3: Assigning Tasks</a>, you&rsquo;ll give each agent their specific task&mdash;Claude gets the API, Codex gets the CLI&mdash;and set up a handoff artifact so Codex can build against Claude&rsquo;s API contract.</p>
+      <p><strong>What&rsquo;s Next:</strong> In <a href="guard-05-hooks-as-guardrails.html">Lesson 5: Hooks as Guardrails</a>, you&rsquo;ll learn how Claude Code hooks let you wire deterministic tools directly into the agent&rsquo;s execution pipeline, guaranteeing they fire on every relevant event.</p>
     </div>
 
     <!-- DIVIDER -->
@@ -183,8 +205,8 @@ Ctrl+J %</div>
 
     <!-- PAGE NAVIGATION (Prev/Next) -->
     <nav class="page-nav">
-      <a href="parallel-01-multi-session-architecture.html" class="prev">Multi-Session Architecture</a>
-      <a href="parallel-03-assigning-tasks.html" class="next">Assigning Tasks</a>
+      <a href="guard-03-compiler-guardrail.html" class="prev">The Compiler as Guardrail</a>
+      <a href="guard-05-hooks-as-guardrails.html" class="next">Hooks as Guardrails</a>
     </nav>
 
     <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
@@ -224,7 +246,7 @@ Ctrl+J %</div>
         <!-- Track 3: Multi-Agent Orchestration -->
         <li class="nav-phase-label">Advanced: Multi-Agent Orchestration</li>
         <li><a href="parallel-01-multi-session-architecture.html">1. Multi-Session Architecture</a></li>
-        <li><a href="parallel-02-launching-agents.html" class="current">2. Launching the Agents</a></li>
+        <li><a href="parallel-02-launching-agents.html">2. Launching the Agents</a></li>
         <li><a href="parallel-03-assigning-tasks.html">3. Assigning Tasks</a></li>
         <li><a href="parallel-04-control-dashboard.html">4. Control Dashboard</a></li>
         <li><a href="parallel-05-integration-point.html">5. Integration Point</a></li>
@@ -252,7 +274,7 @@ Ctrl+J %</div>
         <li><a href="guard-01-autonomy-ladder.html">1. The Autonomy Ladder</a></li>
         <li><a href="guard-02-permission-tiers.html">2. Permission Tiers</a></li>
         <li><a href="guard-03-compiler-guardrail.html">3. The Compiler as Guardrail</a></li>
-        <li><a href="guard-04-deterministic-tools.html">4. Deterministic Tools Over Prompts</a></li>
+        <li><a href="guard-04-deterministic-tools.html" class="current">4. Deterministic Tools Over Prompts</a></li>
         <li><a href="guard-05-hooks-as-guardrails.html">5. Hooks as Guardrails</a></li>
         <li><a href="guard-06-test-automation.html">6. Test Automation That Guards</a></li>
         <li><a href="guard-07-shift-left.html">7. Shift Left</a></li>

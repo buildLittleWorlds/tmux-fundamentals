@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Copy Mode (Handling Long Output) — tmux for AI-Powered Development</title>
+  <title>The Autonomy Ladder &mdash; tmux for AI-Powered Development</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
       <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
       <nav>
         <a href="index.html">Tracks</a>
-        <span class="track-label">tmux + Codex CLI</span>
+        <span class="track-label">Guardrails for Speed</span>
       </nav>
     </div>
   </header>
@@ -31,139 +31,170 @@
     </div>
 
     <!-- PAGE TITLE -->
-    <h1 class="page-title">Copy Mode (Handling Long Output)</h1>
+    <h1 class="page-title">The Autonomy Ladder</h1>
 
     <!-- LESSON METADATA -->
     <div class="course-meta">
-      <span class="meta-pill">Lesson <strong>8</strong> of 10</span>
-      <span class="meta-pill"><strong>Beginner</strong></span>
-      <span class="meta-pill">Track: tmux + Codex CLI</span>
+      <span class="meta-pill">Lesson <strong>1</strong> of 10</span>
+      <span class="meta-pill"><strong>Intermediate</strong></span>
+      <span class="meta-pill">Track: Guardrails for Speed</span>
     </div>
 
     <!-- LEAD PARAGRAPH -->
-    <p class="lead">Codex can produce verbose explanations and long code blocks that scroll past your screen. Copy mode is tmux&rsquo;s built-in feature for scrolling back through output, searching for specific text, and reviewing anything you missed&mdash;without asking Codex to repeat itself.</p>
+    <p class="lead">AI coding agents go fast&mdash;but fast without direction is just expensive chaos. This lesson introduces the autonomy ladder: the spectrum from fully supervised coding to fully autonomous agents. The higher you climb, the more guardrails you need. Not fewer. More.</p>
 
     <!-- CONCEPT -->
-    <h2>Why Copy Mode Matters</h2>
+    <h2>The Pocket Circuit Problem</h2>
 
-    <p>In a normal terminal, once output scrolls off the top of your screen, it&rsquo;s gone (or buried in a limited scrollback buffer). Tmux&rsquo;s copy mode gives you full control: you can scroll line by line, jump pages at a time, and search for specific strings&mdash;all within the pane&rsquo;s history.</p>
+    <p>Think of slot cars&mdash;tiny racing cars on a track. You control one thing: speed. There is no steering wheel. The only way these cars stay on course is the track itself: walls, curves, and guardrails.</p>
 
-    <p>This is especially useful with Codex, which often produces detailed explanations alongside code. Instead of re-prompting &ldquo;show me that again,&rdquo; you scroll back and find it.</p>
+    <p>Large language models are pocket circuit cars. They generate code fast. They have no inherent direction. Your job as an engineer is twofold: <strong>point them the right way</strong> (with prompts, context, specifications) and <strong>install guardrails</strong> (with tools, tests, hooks, and constraints) so that when they inevitably veer off course, they bounce back automatically&mdash;without you having to watch.</p>
 
-    <h3>Copy Mode Keys</h3>
+    <div class="callout info">
+      <p><strong>The key insight:</strong> Guardrails are not about slowing things down. Guardrails are what <em>allow</em> you to go fast. Without them, you spend your time babysitting. With them, you can walk away and come back to working code.</p>
+    </div>
+
+    <h2>The Five Rungs</h2>
+
+    <p>Here is the autonomy ladder&mdash;a maturity model for how you work with AI coding agents:</p>
 
     <table class="tool-table">
       <thead>
         <tr>
-          <th>Key</th>
-          <th>Action</th>
+          <th>Rung</th>
+          <th>Mode</th>
+          <th>You Are&hellip;</th>
+          <th>Guardrails Needed</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>Ctrl+J [</code></td>
-          <td>Enter copy mode</td>
+          <td><strong>1</strong></td>
+          <td>Autocomplete</td>
+          <td>Accepting inline suggestions</td>
+          <td>Minimal&mdash;you see every line</td>
         </tr>
         <tr>
-          <td><code>&uarr;</code> / <code>&darr;</code></td>
-          <td>Scroll line by line</td>
+          <td><strong>2</strong></td>
+          <td>Chat + Apply</td>
+          <td>Asking questions, applying diffs</td>
+          <td>Low&mdash;you review each change</td>
         </tr>
         <tr>
-          <td><code>Page Up</code> / <code>Page Down</code></td>
-          <td>Scroll a full page</td>
+          <td><strong>3</strong></td>
+          <td>Supervised Agent</td>
+          <td>Watching Claude work, approving tools</td>
+          <td>Medium&mdash;type system, linter, tests</td>
         </tr>
         <tr>
-          <td><code>Ctrl+S</code></td>
-          <td>Search forward (incremental)</td>
+          <td><strong>4</strong></td>
+          <td>Background Agent</td>
+          <td>Agent works in another pane/window</td>
+          <td>High&mdash;all of Rung 3 plus hooks</td>
         </tr>
         <tr>
-          <td><code>n</code></td>
-          <td>Jump to next search match</td>
-        </tr>
-        <tr>
-          <td><code>q</code></td>
-          <td>Exit copy mode</td>
+          <td><strong>5</strong></td>
+          <td>Headless Agent</td>
+          <td>Fire-and-forget, check results later</td>
+          <td>Maximum&mdash;full automated pipeline</td>
         </tr>
       </tbody>
     </table>
+
+    <p>Most developers are comfortable at Rungs 1&ndash;2. The beginner tracks in this curriculum (<a href="claude-01-first-session.html">tmux + Claude Code</a>, <a href="codex-01-first-session.html">tmux + Codex CLI</a>) took you through Rungs 3&ndash;5. But climbing the ladder without installing guardrails is like removing the walls from a slot car track and wondering why everything crashes.</p>
+
+    <h2>Where Our Courses Fit</h2>
+
+    <p>The courses you have already built map directly onto this ladder:</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>Course</th>
+          <th>Rung</th>
+          <th>What You Learned</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="claude-04-launch-claude.html">Launch Claude Code</a></td>
+          <td>3</td>
+          <td>Supervised agent in a tmux pane</td>
+        </tr>
+        <tr>
+          <td><a href="claude-05-supervisor-workflow.html">Supervisor Workflow</a></td>
+          <td>3&ndash;4</td>
+          <td>Split panes: agent + monitoring</td>
+        </tr>
+        <tr>
+          <td><a href="claude-07-background-tasks.html">Background Tasks</a></td>
+          <td>4</td>
+          <td>Agent working while you do other things</td>
+        </tr>
+        <tr>
+          <td><a href="claude-09-headless-sessions.html">Headless Sessions</a></td>
+          <td>5</td>
+          <td>Fire-and-forget with <code>-p</code></td>
+        </tr>
+        <tr>
+          <td><a href="https://buildlittleworlds.github.io/claude-code-skills-basics-and-beyond/">Skills: Basics and Beyond</a></td>
+          <td>3&ndash;5</td>
+          <td>Custom commands, hooks, agent teams</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>This track fills the gap: <strong>what guardrails do you need at each rung, and how do you build them?</strong></p>
+
+    <div class="callout warning">
+      <p><strong>The compounding problem:</strong> At Rung 3 (supervised), a small mistake costs you a few seconds&mdash;you see it and say &ldquo;no.&rdquo; At Rung 5 (headless), a small misalignment compounds through every subsequent step the agent takes. The agent might write code, write tests for that wrong code, pass those wrong tests, and present you with a &ldquo;complete&rdquo; feature that is fundamentally broken. Guardrails catch misalignment early, before it compounds.</p>
+    </div>
 
     <!-- EXERCISE -->
     <h2>Exercise</h2>
 
     <div class="step-card">
       <span class="step-number">1</span>
-      <span class="step-title">Enter copy mode</span>
+      <span class="step-title">Audit your current rung</span>
       <div class="step-content">
-        <p>In any pane (the Codex pane is a good choice since it has lots of output), press:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">Ctrl+J [</div>
-        </div>
-        <p>You&rsquo;ll notice the top-right corner of the pane shows a position indicator (like <code>[0/150]</code>). This means you&rsquo;re in copy mode and can navigate the scrollback buffer.</p>
+        <p>Think about how you used Claude or Codex in the beginner tracks. Which rung were you on most of the time? Write it down.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">2</span>
-      <span class="step-title">Scroll through output</span>
+      <span class="step-title">Identify what caught mistakes</span>
       <div class="step-content">
-        <p>Use the arrow keys and page keys to browse Codex&rsquo;s previous output:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block"><span class="comment"># Scroll line by line</span>
-&uarr; / &darr;
-
-<span class="comment"># Scroll a full page</span>
-Page Up / Page Down</div>
-        </div>
-        <p>Scroll up until you can see some of Codex&rsquo;s earlier responses from previous lessons.</p>
+        <p>When the agent made an error during the beginner tracks, how did you catch it? Common answers:</p>
+        <ul>
+          <li>You were watching and saw it happen (Rung 3&mdash;your eyes were the guardrail)</li>
+          <li>You ran the code and it failed (a manual test&mdash;better)</li>
+          <li>Nothing caught it until later (no guardrail&mdash;dangerous)</li>
+        </ul>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">3</span>
-      <span class="step-title">Search for specific text</span>
+      <span class="step-title">List what you wish had been automatic</span>
       <div class="step-content">
-        <p>Instead of scrolling manually, use incremental search. Press <code>Ctrl+S</code>, then type your search term:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">Ctrl+S  <span class="comment">then type: done</span></div>
-        </div>
-        <p>Matches highlight as you type. Press <code>Enter</code> to stop at the current match&mdash;useful for finding the code block where Codex implemented the <code>done</code> command. Press <code>n</code> to jump to the next match.</p>
+        <p>For each mistake you remember, ask: could a tool, test, or hook have caught this without me watching? This is the starting point for your guardrail strategy. Keep this list&mdash;you will build these guardrails over the next nine lessons.</p>
       </div>
-    </div>
-
-    <div class="step-card">
-      <span class="step-number">4</span>
-      <span class="step-title">Exit copy mode</span>
-      <div class="step-content">
-        <p>When you&rsquo;re done reviewing, press <code>q</code> to return to normal mode:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">q</div>
-        </div>
-        <p>You&rsquo;re back to your regular pane and can type commands as usual.</p>
-      </div>
-    </div>
-
-    <div class="callout info">
-      <p><strong>Tip:</strong> Copy mode works in <em>any</em> pane, not just the Codex pane. It&rsquo;s equally useful for scrolling back through test output, build logs, or git history in your shell pane.</p>
     </div>
 
     <!-- CHECKPOINT -->
     <h2>Checkpoint</h2>
 
     <ul class="checklist">
-      <li><code>Ctrl+J [</code> enters copy mode</li>
-      <li>You can scroll with arrow keys and Page Up/Down</li>
-      <li><code>Ctrl+S</code> searches forward; <code>n</code> jumps to next match</li>
-      <li><code>q</code> exits copy mode</li>
-      <li>You can review Codex&rsquo;s previous answers without asking it to repeat itself</li>
+      <li>You understand the five rungs of the autonomy ladder</li>
+      <li>You can identify which rung you typically operate on</li>
+      <li>You see why higher autonomy requires more guardrails, not fewer</li>
+      <li>You have a list of mistakes you wish had been caught automatically</li>
     </ul>
 
     <!-- WHAT'S NEXT -->
     <div class="callout success">
-      <p><strong>What&rsquo;s Next:</strong> What if you want Codex to keep working even after you close your laptop? In <a href="codex-09-headless-sessions.html">Lesson 9: Headless Sessions</a>, you&rsquo;ll learn to detach from tmux and let Codex run unattended&mdash;then reattach later to check the results.</p>
+      <p><strong>What&rsquo;s Next:</strong> In <a href="guard-02-permission-tiers.html">Lesson 2: Permission Tiers</a>, you&rsquo;ll learn Claude Code&rsquo;s built-in permission system&mdash;the first guardrail that&rsquo;s already installed. Understanding the spectrum from interactive approval to <code>--dangerously-skip-permissions</code> is the foundation for everything that follows.</p>
     </div>
 
     <!-- DIVIDER -->
@@ -171,8 +202,8 @@ Page Up / Page Down</div>
 
     <!-- PAGE NAVIGATION (Prev/Next) -->
     <nav class="page-nav">
-      <a href="codex-07-multitasking.html" class="prev">Multitasking</a>
-      <a href="codex-09-headless-sessions.html" class="next">Headless Sessions</a>
+      <span></span>
+      <a href="guard-02-permission-tiers.html" class="next">Permission Tiers</a>
     </nav>
 
     <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
@@ -205,7 +236,7 @@ Page Up / Page Down</div>
         <li><a href="codex-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
         <li><a href="codex-06-windows.html">6. Windows</a></li>
         <li><a href="codex-07-multitasking.html">7. Multitasking</a></li>
-        <li><a href="codex-08-copy-mode.html" class="current">8. Copy Mode</a></li>
+        <li><a href="codex-08-copy-mode.html">8. Copy Mode</a></li>
         <li><a href="codex-09-headless-sessions.html">9. Headless Sessions</a></li>
         <li><a href="codex-10-putting-it-together.html">10. Putting It Together</a></li>
 
@@ -237,7 +268,7 @@ Page Up / Page Down</div>
 
         <!-- Track 5: Guardrails for Speed -->
         <li class="nav-phase-label">Intermediate: Guardrails for Speed</li>
-        <li><a href="guard-01-autonomy-ladder.html">1. The Autonomy Ladder</a></li>
+        <li><a href="guard-01-autonomy-ladder.html" class="current">1. The Autonomy Ladder</a></li>
         <li><a href="guard-02-permission-tiers.html">2. Permission Tiers</a></li>
         <li><a href="guard-03-compiler-guardrail.html">3. The Compiler as Guardrail</a></li>
         <li><a href="guard-04-deterministic-tools.html">4. Deterministic Tools Over Prompts</a></li>

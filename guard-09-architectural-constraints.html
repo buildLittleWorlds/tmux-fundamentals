@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Background Claude Tasks — tmux for AI-Powered Development</title>
+  <title>Architectural Constraints as Code &mdash; tmux for AI-Powered Development</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
       <h1><a href="index.html">tmux for AI-Powered Development</a></h1>
       <nav>
         <a href="index.html">Tracks</a>
-        <span class="track-label">tmux + Claude Code</span>
+        <span class="track-label">Guardrails for Speed</span>
       </nav>
     </div>
   </header>
@@ -31,131 +31,154 @@
     </div>
 
     <!-- PAGE TITLE -->
-    <h1 class="page-title">Background Claude Tasks</h1>
+    <h1 class="page-title">Architectural Constraints as Code</h1>
 
     <!-- LESSON METADATA -->
     <div class="course-meta">
-      <span class="meta-pill">Lesson <strong>7</strong> of 10</span>
-      <span class="meta-pill"><strong>Beginner</strong></span>
-      <span class="meta-pill">Track: tmux + Claude Code</span>
+      <span class="meta-pill">Lesson <strong>9</strong> of 10</span>
+      <span class="meta-pill"><strong>Intermediate</strong></span>
+      <span class="meta-pill">Track: Guardrails for Speed</span>
     </div>
 
     <!-- LEAD PARAGRAPH -->
-    <p class="lead">Sometimes Claude needs time to work through a larger change&mdash;a multi-feature request, a refactor, or a complex bug fix. Rather than watching and waiting, you can background the task and keep using the Claude pane. This lesson teaches you to send Claude&rsquo;s work into the background, check on its progress, and bring it back when it&rsquo;s done.</p>
+    <p class="lead">A linter catches style problems. A compiler catches type errors. But what catches an AI agent that puts database logic directly in your API controller, violating your layered architecture? Architectural constraints encoded as automated tests catch structural violations that no other guardrail can see.</p>
 
     <!-- CONCEPT -->
-    <h2>Backgrounding in Claude Code</h2>
+    <h2>The Architecture Drift Problem</h2>
 
-    <p>Claude Code has a built-in backgrounding feature. When Claude is working on a task, you can send that operation to the background and get your prompt back immediately. This lets you ask quick questions, check documentation, or start thinking about your next request&mdash;all while Claude continues working behind the scenes.</p>
+    <p>AI agents don&rsquo;t inherently understand your architecture. They see files and functions, not layers and boundaries.</p>
 
-    <p>The key commands are:</p>
+    <p>Without explicit constraints, an agent will take the shortest path: need database access? Import the ORM directly in the controller. Need a utility? Copy it instead of using the shared module.</p>
 
-    <table class="tool-table">
-      <thead>
-        <tr>
-          <th>Command</th>
-          <th>What It Does</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>Ctrl+B</code></td>
-          <td>Background the current Claude operation</td>
-        </tr>
-        <tr>
-          <td><code>/status</code></td>
-          <td>Check if a background task is still running</td>
-        </tr>
-        <tr>
-          <td><code>/resume</code></td>
-          <td>Bring the background task back to the foreground</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>These shortcuts work. The code runs. The tests pass. But the architecture erodes with every shortcut.</p>
+
+    <p>Over time, this creates &ldquo;architecture debt&rdquo;&mdash;the system works but becomes impossible to maintain or extend.</p>
+
+    <div class="callout warning">
+      <p><strong>Architecture drift is invisible to line-level guardrails.</strong> Your linter won&rsquo;t flag a correct import that violates a layer boundary. Your tests won&rsquo;t fail when a dependency arrow points the wrong way. You need a different kind of guardrail.</p>
+    </div>
+
+    <h2>Dependency Rules as Tests</h2>
+
+    <p>Tools like ArchUnit (Java), ArchUnitNET (.NET), eslint-plugin-boundaries (TypeScript), and similar tools let you encode dependency rules as unit tests.</p>
+
+    <p>These tests don&rsquo;t verify behavior&mdash;they verify structure. &ldquo;Module A should not import from Module B.&rdquo;</p>
+
+    <p>Here is a conceptual example using a TypeScript/eslint style:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">architectural-rules.test.ts</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>// architectural-rules.test.ts
+// These tests verify structural constraints, not behavior
+
+// Rule 1: API layer cannot import database modules directly
+// api/*.ts should not import from db/*.ts
+
+// Rule 2: Core business logic has no external dependencies
+// core/*.ts should not import from api/*.ts or db/*.ts
+
+// Rule 3: Shared utilities cannot import from feature modules
+// shared/*.ts should not import from features/*.ts</pre>
+      </div>
+    </div>
+
+    <p>For projects without dedicated architectural testing tools, a simpler bash approach works just as well:</p>
+
+    <div class="skill-file">
+      <div class="skill-file-header">check-dependencies.sh</div>
+      <div class="copy-wrapper">
+        <button class="copy-btn">Copy</button>
+        <pre>#!/bin/bash
+# check-dependencies.sh — lightweight architectural constraint checker
+
+VIOLATIONS=0
+
+# Rule: src/core/ should not import from src/db/
+if grep -r "from.*['\"].*db/" src/core/ 2>/dev/null; then
+  echo "VIOLATION: core/ imports from db/" &gt;&amp;2
+  VIOLATIONS=$((VIOLATIONS + 1))
+fi
+
+# Rule: src/api/ should not import from src/core/internal/
+if grep -r "from.*['\"].*core/internal" src/api/ 2>/dev/null; then
+  echo "VIOLATION: api/ imports from core/internal/" &gt;&amp;2
+  VIOLATIONS=$((VIOLATIONS + 1))
+fi
+
+if [ $VIOLATIONS -gt 0 ]; then
+  echo "$VIOLATIONS architectural violation(s) found" &gt;&amp;2
+  exit 2
+fi
+
+echo "Architecture: OK"
+exit 0</pre>
+      </div>
+    </div>
+
+    <h2>Diagrams for Understanding, Tests for Enforcement</h2>
+
+    <p>Generating architecture diagrams from code is valuable&mdash;it helps you understand what the agent built.</p>
+
+    <p>But diagrams are for humans. They require you to look at them and notice problems.</p>
+
+    <p>Automated tests are for machines. They run in the agentic loop and catch violations immediately.</p>
 
     <div class="callout info">
-      <p><strong>Note:</strong> This is a Claude Code feature, not a tmux feature. The <code>Ctrl+B</code> shortcut is intercepted by Claude Code itself to background its current operation. Since we remapped the tmux prefix to <code>Ctrl+J</code>, there&rsquo;s no conflict&mdash;<code>Ctrl+B</code> goes straight to Claude Code.</p>
+      <p><strong>Use both.</strong> Generate diagrams when you need to understand. Run tests when you need to enforce. The diagram tells you what the architecture looks like. The test ensures it stays that way.</p>
     </div>
+
+    <h2>Wiring Architecture Checks into the Loop</h2>
+
+    <p>These checks can run as part of your test suite (triggered by PostToolUse hooks from <a href="guard-05-hooks-as-guardrails.html">Lesson 5</a>).</p>
+
+    <p>Or as a standalone hook that runs periodically or on session Stop.</p>
+
+    <p>They&rsquo;re lightweight&mdash;checking import statements is fast.</p>
+
+    <p>They pair well with the quiet wrapper from <a href="guard-08-token-budget.html">Lesson 8</a>: &ldquo;Architecture: OK&rdquo; on success, specific violations on failure.</p>
 
     <!-- EXERCISE -->
     <h2>Exercise</h2>
 
     <div class="step-card">
       <span class="step-number">1</span>
-      <span class="step-title">Go to your Claude pane</span>
+      <span class="step-title">Sketch your intended architecture</span>
       <div class="step-content">
-        <p>Navigate to window 0 (<code>Ctrl+J 0</code>) and make sure you&rsquo;re in the <strong>Claude pane</strong> (right side). Claude Code should be running from earlier lessons.</p>
+        <p>Sketch your project&rsquo;s intended architecture, even informally: &ldquo;controllers should not import database code.&rdquo; Write it down as a list of dependency rules.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">2</span>
-      <span class="step-title">Give Claude a bigger task</span>
+      <span class="step-title">Write dependency rules as a bash script</span>
       <div class="step-content">
-        <p>Request multiple features at once&mdash;this will take Claude a moment to implement:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="prompt-box-dark">Add these features to td.sh:
-1. A "done" command: ./td.sh done 2 (marks task 2 as complete by removing it)
-2. A "clear" command: ./td.sh clear (removes all tasks)
-3. Better error handling for invalid commands</div>
-        </div>
+        <p>Write 2&ndash;3 dependency rules as grep-based checks in a bash script, following the <code>check-dependencies.sh</code> pattern above.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">3</span>
-      <span class="step-title">Background the task</span>
+      <span class="step-title">Check for existing violations</span>
       <div class="step-content">
-        <p>While Claude is working, press:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">Ctrl+B</div>
-        </div>
-        <p>This backgrounds the current Claude operation. Your prompt comes back immediately&mdash;Claude is still working, but now you can type.</p>
+        <p>Run the script against your codebase. Do any violations already exist? If so, fix them or document them as known exceptions.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">4</span>
-      <span class="step-title">Check the task status</span>
+      <span class="step-title">Wire it into a hook</span>
       <div class="step-content">
-        <p>With your prompt back, type:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">/status</div>
-        </div>
-        <p>This shows whether Claude is still working in the background. You can check as many times as you like.</p>
+        <p>Wire the script into a PostToolUse hook or a Stop hook so it runs automatically during agentic sessions.</p>
       </div>
     </div>
 
     <div class="step-card">
       <span class="step-number">5</span>
-      <span class="step-title">Resume the task</span>
+      <span class="step-title">Test with an agent</span>
       <div class="step-content">
-        <p>When you&rsquo;re ready to see Claude&rsquo;s output, bring the task back to the foreground:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">/resume</div>
-        </div>
-        <p>If the task already finished, you&rsquo;ll see the completed output. If it&rsquo;s still running, you&rsquo;ll watch it continue in real time.</p>
-      </div>
-    </div>
-
-    <div class="step-card">
-      <span class="step-number">6</span>
-      <span class="step-title">Test the new features</span>
-      <div class="step-content">
-        <p>Once Claude is done, switch to the <strong>left pane</strong> (<code>Ctrl+J &larr;</code>) and test all three new features:</p>
-        <div class="copy-wrapper">
-          <button class="copy-btn">Copy</button>
-          <div class="terminal-block">./td.sh list
-./td.sh done 1
-./td.sh list
-./td.sh clear
-./td.sh list</div>
-        </div>
-        <p>The <code>done</code> command should remove a task by number, and <code>clear</code> should remove all tasks. After clearing, the list should be empty.</p>
+        <p>Run a Claude agent and verify: does it respect the boundaries? If it violates one, does the hook catch it?</p>
       </div>
     </div>
 
@@ -163,31 +186,16 @@
     <h2>Checkpoint</h2>
 
     <ul class="checklist">
-      <li>You can background Claude with <code>Ctrl+B</code></li>
-      <li><code>/status</code> shows background task progress</li>
-      <li><code>/resume</code> brings the task back to the foreground</li>
-      <li><code>./td.sh done &lt;n&gt;</code> removes a task by number</li>
-      <li><code>./td.sh clear</code> removes all tasks</li>
+      <li>Architecture drift is invisible to line-level guardrails</li>
+      <li>Dependency rules can be encoded as automated tests or simple grep scripts</li>
+      <li>Diagrams help you understand; tests help you enforce</li>
+      <li>Architecture checks are lightweight and fit inside the agentic loop</li>
+      <li>Without structural constraints, AI agents take the shortest path&mdash;which erodes your architecture</li>
     </ul>
-
-    <!-- WHEN TO USE THIS -->
-    <h2>When to Use Backgrounding</h2>
-
-    <p>Backgrounding is most useful when Claude has enough context to work independently for a while:</p>
-
-    <ul>
-      <li><strong>Long refactors</strong> &mdash; restructuring code across multiple functions</li>
-      <li><strong>Multi-file changes</strong> &mdash; adding a feature that touches several files</li>
-      <li><strong>Quick questions</strong> &mdash; you want to ask Claude something else while a task runs</li>
-    </ul>
-
-    <div class="callout warning">
-      <p><strong>Keep in mind:</strong> Backgrounding works best for self-contained tasks where Claude doesn&rsquo;t need your input mid-way. If Claude is likely to ask a clarifying question, it&rsquo;s better to stay in the foreground so you can respond immediately.</p>
-    </div>
 
     <!-- WHAT'S NEXT -->
     <div class="callout success">
-      <p><strong>What&rsquo;s Next:</strong> In <a href="claude-08-copy-mode.html">Lesson 8: Copy Mode</a>, you&rsquo;ll learn to scroll back through terminal output, search for specific text, and copy content&mdash;essential when Claude produces long output that scrolls past the visible screen.</p>
+      <p><strong>What&rsquo;s Next:</strong> In <a href="guard-10-building-your-pipeline.html">Lesson 10: Building Your Pipeline</a>, you&rsquo;ll compose all ten guardrails into a reusable pipeline that you can take to any project.</p>
     </div>
 
     <!-- DIVIDER -->
@@ -195,8 +203,8 @@
 
     <!-- PAGE NAVIGATION (Prev/Next) -->
     <nav class="page-nav">
-      <a href="claude-06-windows.html" class="prev">Windows</a>
-      <a href="claude-08-copy-mode.html" class="next">Copy Mode</a>
+      <a href="guard-08-token-budget.html" class="prev">Token Budget Engineering</a>
+      <a href="guard-10-building-your-pipeline.html" class="next">Building Your Pipeline</a>
     </nav>
 
     <!-- BOTTOM SITE NAVIGATION (Track-grouped) -->
@@ -215,7 +223,7 @@
         <li><a href="claude-04-launch-claude.html">4. Launch Claude Code</a></li>
         <li><a href="claude-05-supervisor-workflow.html">5. Supervisor Workflow</a></li>
         <li><a href="claude-06-windows.html">6. Windows</a></li>
-        <li><a href="claude-07-background-tasks.html" class="current">7. Background Tasks</a></li>
+        <li><a href="claude-07-background-tasks.html">7. Background Tasks</a></li>
         <li><a href="claude-08-copy-mode.html">8. Copy Mode</a></li>
         <li><a href="claude-09-headless-sessions.html">9. Headless Sessions</a></li>
         <li><a href="claude-10-putting-it-together.html">10. Putting It Together</a></li>
@@ -269,7 +277,7 @@
         <li><a href="guard-06-test-automation.html">6. Test Automation That Guards</a></li>
         <li><a href="guard-07-shift-left.html">7. Shift Left</a></li>
         <li><a href="guard-08-token-budget.html">8. Token Budget Engineering</a></li>
-        <li><a href="guard-09-architectural-constraints.html">9. Architectural Constraints as Code</a></li>
+        <li><a href="guard-09-architectural-constraints.html" class="current">9. Architectural Constraints as Code</a></li>
         <li><a href="guard-10-building-your-pipeline.html">10. Building Your Pipeline</a></li>
       </ul>
     </nav>
