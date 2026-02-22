@@ -55,7 +55,11 @@
     </div>
 
     <div class="callout warning">
-      <p><strong>Permissions matter:</strong> Claude Code prompts you to approve each tool it uses&mdash;file edits, shell commands, and so on. In a headless session nobody is there to press &ldquo;y&rdquo;, so Claude will hang waiting for approval. The fix is the <code>--dangerously-skip-permissions</code> flag, which auto-approves all tool use. Only use this on your own projects where you trust the prompt you&rsquo;re giving Claude. Never use it on code you don&rsquo;t control.</p>
+      <p><strong>Two flags for headless Claude:</strong> Running Claude unattended requires two flags:</p>
+      <ul>
+        <li><code>-p</code> &mdash; Print mode. Runs non-interactively: skips the workspace trust dialog, processes the prompt, and exits. Without this, Claude starts an interactive session that hangs waiting for input.</li>
+        <li><code>--dangerously-skip-permissions</code> &mdash; Auto-approves all tool use (file edits, shell commands, etc.) so Claude never pauses for permission. Only use this on your own projects where you trust the prompt.</li>
+      </ul>
     </div>
 
     <!-- EXERCISE -->
@@ -78,12 +82,13 @@
       <span class="step-number">2</span>
       <span class="step-title">Launch a headless Claude agent</span>
       <div class="step-content">
-        <p>Start a new detached session that runs Claude with a specific task:</p>
+        <p>Create a detached session, then send it a Claude command using <code>send-keys</code>:</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block">tmux new-session -d -s agent "cd ~/projects/td && claude --dangerously-skip-permissions 'Add a feature to td.sh: ./td.sh search &lt;term&gt; should show only tasks containing that term. Then exit.'"</div>
+          <div class="terminal-block">tmux new-session -d -s agent
+tmux send-keys -t agent 'cd ~/projects/td && claude -p --dangerously-skip-permissions "Add a feature to td.sh: ./td.sh search &lt;term&gt; should show only tasks containing that term."' Enter</div>
         </div>
-        <p>This creates a session called <code>agent</code>, runs <code>claude</code> inside it with the given prompt, and returns you to your terminal immediately. The <code>--dangerously-skip-permissions</code> flag lets Claude edit files and run commands without waiting for approval&mdash;essential for unattended sessions.</p>
+        <p>The first command creates a session called <code>agent</code> with a shell. The second sends the Claude command into it. This two-step approach is more robust than embedding the command in the session creation&mdash;if anything goes wrong, the session stays alive so you can attach and debug.</p>
       </div>
     </div>
 
@@ -176,11 +181,17 @@
         <pre>#!/bin/bash
 # Run multiple Claude agents in parallel
 
-SKIP="--dangerously-skip-permissions"
+FLAGS="-p --dangerously-skip-permissions"
+PROJECT="$HOME/project"
 
-tmux new-session -d -s tests "cd ~/project && claude $SKIP 'Run the test suite and fix any failures'"
-tmux new-session -d -s docs "cd ~/project && claude $SKIP 'Update README with latest API changes'"
-tmux new-session -d -s lint "cd ~/project && claude $SKIP 'Fix all linting errors'"
+tmux new-session -d -s tests
+tmux send-keys -t tests "cd $PROJECT && claude $FLAGS 'Run the test suite and fix any failures'" Enter
+
+tmux new-session -d -s docs
+tmux send-keys -t docs "cd $PROJECT && claude $FLAGS 'Update README with latest API changes'" Enter
+
+tmux new-session -d -s lint
+tmux send-keys -t lint "cd $PROJECT && claude $FLAGS 'Fix all linting errors'" Enter
 
 echo "Agents running. Check with: tmux ls"</pre>
       </div>
