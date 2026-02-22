@@ -73,8 +73,8 @@
           <td>Scroll a full page</td>
         </tr>
         <tr>
-          <td><code>/text</code></td>
-          <td>Search forward for &ldquo;text&rdquo;</td>
+          <td><code>Ctrl+S</code></td>
+          <td>Search forward (incremental)</td>
         </tr>
         <tr>
           <td><code>n</code></td>
@@ -124,12 +124,12 @@ Page Up / Page Down</div>
       <span class="step-number">3</span>
       <span class="step-title">Search for specific text</span>
       <div class="step-content">
-        <p>Instead of scrolling manually, search for a keyword. Type <code>/</code> followed by your search term:</p>
+        <p>Instead of scrolling manually, use incremental search. Press <code>Ctrl+S</code>, then type your search term:</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block">/done</div>
+          <div class="terminal-block">Ctrl+S  <span class="comment">then type: done</span></div>
         </div>
-        <p>This searches forward through the scrollback for the word &ldquo;done&rdquo;&mdash;useful for finding the code block where Codex implemented the <code>done</code> command. Press <code>n</code> to jump to the next match.</p>
+        <p>Matches highlight as you type. Press <code>Enter</code> to stop at the current match&mdash;useful for finding the code block where Codex implemented the <code>done</code> command. Press <code>n</code> to jump to the next match.</p>
       </div>
     </div>
 
@@ -156,7 +156,7 @@ Page Up / Page Down</div>
     <ul class="checklist">
       <li><code>Ctrl+J [</code> enters copy mode</li>
       <li>You can scroll with arrow keys and Page Up/Down</li>
-      <li><code>/text</code> searches forward; <code>n</code> jumps to next match</li>
+      <li><code>Ctrl+S</code> searches forward; <code>n</code> jumps to next match</li>
       <li><code>q</code> exits copy mode</li>
       <li>You can review Codex&rsquo;s previous answers without asking it to repeat itself</li>
     </ul>
