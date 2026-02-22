@@ -54,6 +54,10 @@
       <p><strong>Headless vs. backgrounding:</strong> In Lesson 7 you learned to background a task <em>within</em> an existing Claude session. Headless sessions go further&mdash;they create an entirely new session with its own Claude instance. This is the difference between putting one task on hold and spinning up a separate worker.</p>
     </div>
 
+    <div class="callout warning">
+      <p><strong>Permissions matter:</strong> Claude Code prompts you to approve each tool it uses&mdash;file edits, shell commands, and so on. In a headless session nobody is there to press &ldquo;y&rdquo;, so Claude will hang waiting for approval. The fix is the <code>--dangerously-skip-permissions</code> flag, which auto-approves all tool use. Only use this on your own projects where you trust the prompt you&rsquo;re giving Claude. Never use it on code you don&rsquo;t control.</p>
+    </div>
+
     <!-- EXERCISE -->
     <h2>Exercise</h2>
 
@@ -77,9 +81,9 @@
         <p>Start a new detached session that runs Claude with a specific task:</p>
         <div class="copy-wrapper">
           <button class="copy-btn">Copy</button>
-          <div class="terminal-block">tmux new-session -d -s agent "cd ~/projects/td && claude 'Add a feature to td.sh: ./td.sh search &lt;term&gt; should show only tasks containing that term. Then exit.'"</div>
+          <div class="terminal-block">tmux new-session -d -s agent "cd ~/projects/td && claude --dangerously-skip-permissions 'Add a feature to td.sh: ./td.sh search &lt;term&gt; should show only tasks containing that term. Then exit.'"</div>
         </div>
-        <p>This creates a session called <code>agent</code>, runs <code>claude</code> inside it with the given prompt, and returns you to your terminal immediately. Claude is working in the background.</p>
+        <p>This creates a session called <code>agent</code>, runs <code>claude</code> inside it with the given prompt, and returns you to your terminal immediately. The <code>--dangerously-skip-permissions</code> flag lets Claude edit files and run commands without waiting for approval&mdash;essential for unattended sessions.</p>
       </div>
     </div>
 
@@ -172,9 +176,11 @@
         <pre>#!/bin/bash
 # Run multiple Claude agents in parallel
 
-tmux new-session -d -s tests "cd ~/project && claude 'Run the test suite and fix any failures'"
-tmux new-session -d -s docs "cd ~/project && claude 'Update README with latest API changes'"
-tmux new-session -d -s lint "cd ~/project && claude 'Fix all linting errors'"
+SKIP="--dangerously-skip-permissions"
+
+tmux new-session -d -s tests "cd ~/project && claude $SKIP 'Run the test suite and fix any failures'"
+tmux new-session -d -s docs "cd ~/project && claude $SKIP 'Update README with latest API changes'"
+tmux new-session -d -s lint "cd ~/project && claude $SKIP 'Fix all linting errors'"
 
 echo "Agents running. Check with: tmux ls"</pre>
       </div>
